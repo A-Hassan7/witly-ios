@@ -73,9 +73,13 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
     init(appDelegate: AppDelegate) {
         let appHooks = AppHooks()
         appHooks.setUp()
+        WitlyAppHooks.install(into: appHooks) // WITLY SEAM
         
         // Override colours before we start building any UI components.
-        appHooks.compoundHook.override(colors: Color.compound, uiColors: UIColor.compound)
+        // Xcode 27/Swift 6.4 no longer infers `init` as MainActor-isolated here (WITLY SEAM).
+        MainActor.assumeIsolated {
+            appHooks.compoundHook.override(colors: Color.compound, uiColors: UIColor.compound)
+        }
         
         windowManager = WindowManager(appDelegate: appDelegate)
         let networkMonitor = NetworkMonitor()
@@ -717,7 +721,7 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
             fatalError("User session not setup")
         }
         
-        Task {
+        Task { [self] in
             let credentials = SoftLogoutScreenCredentials(userID: userSession.clientProxy.userID,
                                                           homeserverName: userSession.clientProxy.homeserver,
                                                           userDisplayName: userSession.clientProxy.userProfilePublisher.value.displayName ?? "",
@@ -738,7 +742,7 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                                                                    appHooks: appHooks,
                                                                    userIndicatorController: userIndicatorController)
             let coordinator = SoftLogoutScreenCoordinator(parameters: parameters)
-            self.softLogoutCoordinator = coordinator
+            softLogoutCoordinator = coordinator
             coordinator.actions
                 .sink { [weak self] action in
                     guard let self else { return }

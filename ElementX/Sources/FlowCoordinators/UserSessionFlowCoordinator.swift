@@ -374,7 +374,7 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
             case .clearCache:
                 actionsSubject.send(.clearCache)
             case .runLogoutFlow:
-                Task {
+                _ = Task {
                     self.navigationTabCoordinator.setSheetCoordinator(nil)
                     
                     // The sheet needs to be dismissed before the alert can be shown

@@ -8,12 +8,14 @@
 
 import Foundation
 
-enum NetworkMonitorReachability {
+// nonisolated because the synthesized Equatable conformances are used from off-main-actor contexts
+// (e.g. MediaProvider's retry loop) under Xcode 27/Swift 6.4's isolated-conformance inference.
+nonisolated enum NetworkMonitorReachability {
     case reachable
     case unreachable
 }
 
-enum HomeserverReachability {
+nonisolated enum HomeserverReachability {
     /// The store is open and the homeserver is reachable.
     case reachable
     /// The homeserver can't be reached even though we're trying to sync (i.e. offline).

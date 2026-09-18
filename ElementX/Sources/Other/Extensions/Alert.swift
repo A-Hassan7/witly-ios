@@ -13,27 +13,32 @@ protocol AlertProtocol {
 }
 
 extension View {
-    func alert<Item: AlertProtocol, Actions: View, Message: View>(item: Binding<Item?>, @ViewBuilder actions: (Item) -> Actions, @ViewBuilder message: (Item) -> Message) -> some View {
+    func alert<Item: AlertProtocol, Actions: View, Message: View>(item: Binding<Item?>, @ViewBuilder actions: (Item) -> Actions,
+                                                                  @ViewBuilder message: (Item) -> Message) -> some View {
         let binding = Binding<Bool>(get: {
-            item.wrappedValue != nil
-        }, set: { newValue in
-            if !newValue {
-                item.wrappedValue = nil
-            }
-        })
-        return alert(item.wrappedValue?.title ?? "", isPresented: binding, presenting: item.wrappedValue, actions: actions, message: message)
+                                        item.wrappedValue != nil
+                                    },
+                                    set: { newValue in
+                                        if !newValue {
+                                            item.wrappedValue = nil
+                                        }
+                                    })
+        return alert(item.wrappedValue?.title ?? "", isPresented: binding, presenting: item.wrappedValue,
+                     actions: actions, message: message)
     }
     
     // periphery: ignore - not used yet but might be useful
     func alert<Item: AlertProtocol, Actions: View>(item: Binding<Item?>, @ViewBuilder actions: (Item) -> Actions) -> some View {
         let binding = Binding<Bool>(get: {
-            item.wrappedValue != nil
-        }, set: { newValue in
-            if !newValue {
-                item.wrappedValue = nil
-            }
-        })
-        return alert(item.wrappedValue?.title ?? "", isPresented: binding, presenting: item.wrappedValue, actions: actions)
+                                        item.wrappedValue != nil
+                                    },
+                                    set: { newValue in
+                                        if !newValue {
+                                            item.wrappedValue = nil
+                                        }
+                                    })
+        return alert(item.wrappedValue?.title ?? "", isPresented: binding, presenting: item.wrappedValue,
+                     actions: actions)
     }
 }
 

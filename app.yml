@@ -1,14 +1,19 @@
 settings:
-  APP_DISPLAY_NAME: Element X
-  PRODUCTION_APP_NAME: Element
-  APP_GROUP_IDENTIFIER: group.io.element
-  BASE_BUNDLE_IDENTIFIER: io.element.elementx
+  APP_DISPLAY_NAME: Witly
+  PRODUCTION_APP_NAME: Witly
+  APP_GROUP_IDENTIFIER: group.uk.agchat.witly
+  BASE_BUNDLE_IDENTIFIER: uk.agchat.witly
   ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "colors/accent-color"
-  DEVELOPMENT_TEAM: 7J4U792NQT
+  # No Apple Developer team yet — blank team + automatic signing builds fine for the
+  # iOS Simulator ("Sign to Run Locally"). Fill in once a team is available (device/TestFlight).
+  DEVELOPMENT_TEAM: ""
   IS_NIGHTLY_BUILD: false
 
   # Optional configuration to load accounts from Element Classic.
-  CLASSIC_APP_GROUP_IDENTIFIER: group.im.vector
-  CLASSIC_APP_KEYCHAIN_SERVICE_IDENTIFIER: im.vector.app.encryption-manager-service
-  CLASSIC_APP_KEYCHAIN_ACCESS_GROUP_IDENTIFIER: "$(DEVELOPMENT_TEAM).im.vector.app.keychain.shared"
-  CLASSIC_APP_DEEP_LINK_URL: "element://open"
+  # Unique to Witly (not Element's group.im.vector) so this never collides with Element's
+  # own App Group/keychain during provisioning; Witly has no real Classic-app counterpart,
+  # so this migration flow is effectively a no-op (no matching legacy app installed).
+  CLASSIC_APP_GROUP_IDENTIFIER: group.uk.agchat.witly.classic
+  CLASSIC_APP_KEYCHAIN_SERVICE_IDENTIFIER: uk.agchat.witly.encryption-manager-service
+  CLASSIC_APP_KEYCHAIN_ACCESS_GROUP_IDENTIFIER: "$(DEVELOPMENT_TEAM).uk.agchat.witly.keychain.classic"
+  CLASSIC_APP_DEEP_LINK_URL: "witly://open"

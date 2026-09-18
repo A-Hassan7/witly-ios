@@ -246,7 +246,7 @@ private extension UIWindowScene {
         self.sizeRestrictions?.minimumSize = size
         self.sizeRestrictions?.maximumSize = size
         
-        Task {
+        _ = Task {
             try await Task.sleep(for: .milliseconds(100))
             self.sizeRestrictions?.minimumSize = sizeRestrictions.minimumSize
             self.sizeRestrictions?.maximumSize = sizeRestrictions.maximumSize

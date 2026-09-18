@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import SwiftUI
+import UIKit
 
 enum UserIDAttribute: AttributedStringKey {
     typealias Value = String

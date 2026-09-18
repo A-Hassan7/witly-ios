@@ -11,16 +11,20 @@ import UIKit
 
 public extension UIColor {
     /// The colours used by Element as defined in Compound Design Tokens.
-    static let compound = CompoundUIColors()
+    // `CompoundUIColors` itself is nonisolated for exactly this reason; this accessor must be too,
+    // otherwise it picks up the package's default MainActor isolation regardless.
+    nonisolated static let compound = CompoundUIColors()
 }
 
 /// The colours used by Element as defined in Compound Design Tokens.
 /// This class contains only the colour tokens in a more usable form.
 /// Since this can be used by attributed strings which may run in non isolated concurrent contexts,
 /// The object needs to be nonisolated.
+// `overrides` is only ever written once at startup before concurrent reads begin, so `@unchecked`
+// is safe here and lets `nonisolated static let compound` above satisfy the Sendable requirement.
 @Observable
 @dynamicMemberLookup
-public final nonisolated class CompoundUIColors {
+public final nonisolated class CompoundUIColors: @unchecked Sendable {
     /// The base colour tokens that form the palette of available colours.
     ///
     /// Normally these shouldn't be necessary, however in practice we may need

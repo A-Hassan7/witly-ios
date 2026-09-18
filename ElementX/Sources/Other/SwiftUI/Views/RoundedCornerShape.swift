@@ -12,7 +12,9 @@ struct RoundedCornerShape: Shape {
     let radius: CGFloat
     let corners: UIRectCorner
     
-    func path(in rect: CGRect) -> Path {
+    // `Shape.path(in:)` is a nonisolated protocol requirement; without this Xcode 27/Swift 6.4
+    // treats the conformance as crossing into the module's default MainActor isolation.
+    nonisolated func path(in rect: CGRect) -> Path {
         var path = Path()
         
         let width = rect.size.width

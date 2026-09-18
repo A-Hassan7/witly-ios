@@ -62,7 +62,8 @@ targets:
     entitlements:
       path: NSE.entitlements
       properties:
-        com.apple.developer.usernotifications.filtering: true
+        # com.apple.developer.usernotifications.filtering removed: it's an Apple-managed
+        # entitlement requiring explicit approval, not available for local/initial forks.
         com.apple.security.application-groups:
         - $(APP_GROUP_IDENTIFIER)
         keychain-access-groups:

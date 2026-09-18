@@ -48,7 +48,7 @@ class UserIndicatorController: ObservableObject, UserIndicatorControllerProtocol
             if let delay {
                 delayedIndicators.insert(indicator.id)
                 
-                Task {
+                _ = Task {
                     try await Task.sleep(for: .seconds(delay.seconds))
                     
                     guard delayedIndicators.contains(indicator.id) else {

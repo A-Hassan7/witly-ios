@@ -90,7 +90,9 @@ private struct WaveformShape: Shape {
     let waveformData: [Float]
     var minimumGraphAmplitude: CGFloat = 1.0
     
-    func path(in rect: CGRect) -> Path {
+    // `Shape.path(in:)` is a nonisolated protocol requirement; without this Xcode 27/Swift 6.4
+    // treats the conformance as crossing into the module's default MainActor isolation.
+    nonisolated func path(in rect: CGRect) -> Path {
         let width = rect.size.width
         let height = rect.size.height
         let centerY = rect.size.height / 2
