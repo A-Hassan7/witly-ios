@@ -282,7 +282,11 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
         }
         
         guard let userIdentity else {
-            MXLog.failure("User identity should be known at this point")
+            // WITLY SEAM: was MXLog.failure (asserts/traps in DEBUG). Bridge puppet users (e.g.
+            // WhatsApp ghosts) legitimately have no cross-signing identity, which is an expected,
+            // recoverable case here (falls back to "not verified" either way) — not a programming
+            // error worth crashing over.
+            MXLog.error("User identity not available for DM recipient; treating as not verified")
             state.dmRecipientDetails.verification = .notVerified
             return
         }
