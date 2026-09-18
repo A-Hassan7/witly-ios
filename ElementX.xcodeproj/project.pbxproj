@@ -449,6 +449,7 @@
 		4716587A9BA69ED8FD1B986B /* PollOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B19D10B102956066AF117B /* PollOptionView.swift */; };
 		47305C0911C9E1AA774A4000 /* TemplateScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA90BD288E5AE6BC643AFDDF /* TemplateScreenCoordinator.swift */; };
 		473D6362E1D1A714E07B1B0B /* RoomSDKMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27A6C38B29A60E187D6A4B0A /* RoomSDKMock.swift */; };
+		473E81F0F1CE82BF22F10E91 /* WitlyCryptoIdentityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F4093B25777E396A3BE4D9 /* WitlyCryptoIdentityStore.swift */; };
 		4764FC9A843D1F9865EDC29C /* EditRoomAddressScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048547AC50ADCF201684E87 /* EditRoomAddressScreen.swift */; };
 		478C363F63A5DFC3C83E334C /* MediaProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F65E4BB9E82EB8373207CF8 /* MediaProviderMock.swift */; };
 		4807E8F51DB54F56B25E1C7E /* AppLockSetupSettingsScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C38663020DF2EB2D13F5E /* AppLockSetupSettingsScreenViewModel.swift */; };
@@ -1894,6 +1895,7 @@
 		1434D5169F0EE319E226DA7F /* RoomMembershipDetailsProxyProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomMembershipDetailsProxyProtocol.swift; sourceTree = "<group>"; };
 		14517E5597594956FCE1950D /* RoomInfoProxyProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomInfoProxyProtocol.swift; sourceTree = "<group>"; };
 		1454CF3AABD242F55C8A2615 /* InviteUsersScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteUsersScreenModels.swift; sourceTree = "<group>"; };
+		14F4093B25777E396A3BE4D9 /* WitlyCryptoIdentityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlyCryptoIdentityStore.swift; sourceTree = "<group>"; };
 		1511B1DCECC0DC75EB267328 /* KnockRequestsListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnockRequestsListScreen.swift; sourceTree = "<group>"; };
 		154664B1B0D71846FBAC6E61 /* ChatsSpaceFiltersScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsSpaceFiltersScreen.swift; sourceTree = "<group>"; };
 		1562EAF6231151A675BED7A9 /* RoomDirectorySearchScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomDirectorySearchScreenCoordinator.swift; sourceTree = "<group>"; };
@@ -4805,6 +4807,7 @@
 			isa = PBXGroup;
 			children = (
 				A2EA819D770B03A0155B8D70 /* WitlyAppHooks.swift */,
+				14F4093B25777E396A3BE4D9 /* WitlyCryptoIdentityStore.swift */,
 				86E763BD6E325701C9139FEE /* WitlySessionRestorer.swift */,
 			);
 			path = Element;
@@ -9811,6 +9814,7 @@
 				F8E8D14FCFF152D58CFA269E /* WitlyColorScheme.swift in Sources */,
 				5BAA541074B548BFD1243C05 /* WitlyCompoundHook.swift in Sources */,
 				03ED33F8FCFE3639BD54A0BC /* WitlyConfig.swift in Sources */,
+				473E81F0F1CE82BF22F10E91 /* WitlyCryptoIdentityStore.swift in Sources */,
 				41DE8DA3BD7FA6A865EF2606 /* WitlyLog.swift in Sources */,
 				CFECCF6FB93407FF54424DBC /* WitlyOnboardingAuthCoordinator.swift in Sources */,
 				1BFB4625107D46190987D84C /* WitlyOnboardingAuthModels.swift in Sources */,

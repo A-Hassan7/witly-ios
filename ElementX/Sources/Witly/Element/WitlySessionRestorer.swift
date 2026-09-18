@@ -25,6 +25,7 @@ struct WitlySessionRestorer {
     private let clientFactory: ClientFactoryProtocol
     private let userSessionStore: UserSessionStoreProtocol
     private let encryptionKeyProvider: EncryptionKeyProviderProtocol
+    private let cryptoIdentityStore: WitlyCryptoIdentityStore
     private let appSettings: AppSettings
     private let appHooks: AppHooks
     
@@ -32,12 +33,14 @@ struct WitlySessionRestorer {
          appSettings: AppSettings,
          appHooks: AppHooks,
          clientFactory: ClientFactoryProtocol = ClientFactory(),
-         encryptionKeyProvider: EncryptionKeyProviderProtocol = EncryptionKeyProvider()) {
+         encryptionKeyProvider: EncryptionKeyProviderProtocol = EncryptionKeyProvider(),
+         cryptoIdentityStore: WitlyCryptoIdentityStore = WitlyCryptoIdentityStore()) {
         self.userSessionStore = userSessionStore
         self.appSettings = appSettings
         self.appHooks = appHooks
         self.clientFactory = clientFactory
         self.encryptionKeyProvider = encryptionKeyProvider
+        self.cryptoIdentityStore = cryptoIdentityStore
     }
     
     func restore(credentials: WitlyMatrixCredentials) async -> Result<UserSessionProtocol, WitlySessionRestoreError> {
@@ -49,8 +52,19 @@ struct WitlySessionRestorer {
                               oauthData: nil,
                               slidingSyncVersion: .native)
         
-        let sessionDirectories = SessionDirectories()
-        let passphrase = encryptionKeyProvider.generateKey().base64EncodedString()
+        // Reuse the same local crypto identity for a given device ID across repeated onboarding
+        // runs (see WitlyCryptoIdentityStore) instead of generating a fresh one every time.
+        let identity: WitlyCryptoIdentity
+        if let existing = cryptoIdentityStore.load(deviceID: credentials.deviceID) {
+            WitlyLog.info("Reusing local crypto identity for device \(credentials.deviceID)")
+            identity = existing
+        } else {
+            identity = WitlyCryptoIdentity(sessionDirectories: SessionDirectories(),
+                                           passphrase: encryptionKeyProvider.generateKey().base64EncodedString())
+            cryptoIdentityStore.save(identity, deviceID: credentials.deviceID)
+        }
+        let sessionDirectories = identity.sessionDirectories
+        let passphrase = identity.passphrase
         
         let restorationToken = RestorationToken(session: session,
                                                 sessionDirectories: sessionDirectories,
