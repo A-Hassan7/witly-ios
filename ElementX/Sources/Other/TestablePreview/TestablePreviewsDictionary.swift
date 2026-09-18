@@ -224,6 +224,9 @@ enum TestablePreviewsDictionary {
             "VoiceMessageRoomTimelineView_Previews" : VoiceMessageRoomTimelineView_Previews.self,
             "VoiceMessageTrashButton_Previews" : VoiceMessageTrashButton_Previews.self,
             "WaveformCursorView_Previews" : WaveformCursorView_Previews.self,
+            "WitlyOnboardingAuthScreen_Previews" : WitlyOnboardingAuthScreen_Previews.self,
+            "WitlyOnboardingConnectScreen_Previews" : WitlyOnboardingConnectScreen_Previews.self,
+            "WitlyOnboardingIntroScreen_Previews" : WitlyOnboardingIntroScreen_Previews.self,
         ]
         // Previews carrying an @available attribute (e.g. those observing state through the iOS 26
         // Observations-based observe(_:)) can't be referenced unconditionally in this iOS 18 target.

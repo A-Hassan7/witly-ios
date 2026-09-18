@@ -59,7 +59,8 @@ targets:
             CFBundleURLName: "Application",
             CFBundleURLSchemes: [
               $(BASE_BUNDLE_IDENTIFIER), # The app's own scheme for custom routes
-              "matrix" # Matrix URI scheme for permalinks
+              "matrix", # Matrix URI scheme for permalinks
+              "witly" # Supabase OAuth (Google) redirect callback: witly://auth-callback
             ]
           }
         ]

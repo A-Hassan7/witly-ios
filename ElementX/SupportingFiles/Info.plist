@@ -46,6 +46,7 @@
 			<array>
 				<string>$(BASE_BUNDLE_IDENTIFIER)</string>
 				<string>matrix</string>
+				<string>witly</string>
 			</array>
 		</dict>
 	</array>

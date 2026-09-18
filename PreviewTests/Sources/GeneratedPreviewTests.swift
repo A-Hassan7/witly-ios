@@ -1613,6 +1613,27 @@ extension PreviewTests {
             try await assertSnapshots(matching: preview, step: index)
         }
     }
+
+    @Test
+    func witlyOnboardingAuthScreen() async throws {
+        for (index, preview) in WitlyOnboardingAuthScreen_Previews._allPreviews.enumerated() {
+            try await assertSnapshots(matching: preview, step: index)
+        }
+    }
+
+    @Test
+    func witlyOnboardingConnectScreen() async throws {
+        for (index, preview) in WitlyOnboardingConnectScreen_Previews._allPreviews.enumerated() {
+            try await assertSnapshots(matching: preview, step: index)
+        }
+    }
+
+    @Test
+    func witlyOnboardingIntroScreen() async throws {
+        for (index, preview) in WitlyOnboardingIntroScreen_Previews._allPreviews.enumerated() {
+            try await assertSnapshots(matching: preview, step: index)
+        }
+    }
 }
 
 // swiftlint:enable all

@@ -15,7 +15,7 @@ import Sentry
 import SwiftUI
 import Version
 
-class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDelegate, NotificationManagerDelegate, SecureWindowManagerDelegate {
+class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDelegate, WitlyOnboardingFlowCoordinatorDelegate, NotificationManagerDelegate, SecureWindowManagerDelegate { // WITLY SEAM
     private let stateMachine: AppCoordinatorStateMachine
     private let navigationRootCoordinator: NavigationRootCoordinator
     private let userSessionStore: UserSessionStoreProtocol
@@ -51,6 +51,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
     }
     
     private var authenticationFlowCoordinator: AuthenticationFlowCoordinator?
+    // WITLY SEAM: replaces authenticationFlowCoordinator in startAuthentication()
+    private var witlyOnboardingFlowCoordinator: WitlyOnboardingFlowCoordinator?
     private let appLockFlowCoordinator: AppLockFlowCoordinator
     // periphery:ignore - used to avoid deallocation
     private var appLockSetupFlowCoordinator: AppLockSetupFlowCoordinator?
@@ -381,6 +383,14 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         stateMachine.processEvent(.createdUserSession)
     }
     
+    // MARK: - WitlyOnboardingFlowCoordinatorDelegate (WITLY SEAM)
+    
+    func witlyOnboardingFlowCoordinator(didLoginWithSession userSession: UserSessionProtocol) {
+        self.userSession = userSession
+        witlyOnboardingFlowCoordinator = nil
+        stateMachine.processEvent(.createdUserSession)
+    }
+    
     // MARK: - WindowManagerDelegate
     
     func windowManagerDidConfigureWindows(_ windowManager: SecureWindowManagerProtocol) {
@@ -669,32 +679,21 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         }
     }
     
+    // WITLY SEAM: launches WitlyOnboardingFlowCoordinator (carousel -> auth -> connect) instead of
+    // Element's own AuthenticationFlowCoordinator. To revert, restore the body from git history
+    // prior to this seam (see PATCHES.md).
     private func startAuthentication() {
-        let encryptionKeyProvider = EncryptionKeyProvider()
-        let classicAppManager = ClassicAppManager()
-        let authenticationService = AuthenticationService(userSessionStore: userSessionStore,
-                                                          encryptionKeyProvider: encryptionKeyProvider,
-                                                          classicAppManager: classicAppManager,
-                                                          appSettings: appSettings,
-                                                          appHooks: appHooks)
-        Task { await authenticationService.setupClassicAppAccountState() }
-        
-        let coordinator = AuthenticationFlowCoordinator(authenticationService: authenticationService,
-                                                        bugReportService: bugReportService,
-                                                        navigationRootCoordinator: navigationRootCoordinator,
-                                                        appMediator: appMediator,
-                                                        appSettings: appSettings,
-                                                        appHooks: appHooks,
-                                                        userIndicatorController: userIndicatorController)
+        let onboardingParameters = WitlyOnboardingFlowCoordinatorParameters(navigationRootCoordinator: navigationRootCoordinator,
+                                                                            presentationAnchor: windowManager.mainWindow,
+                                                                            userSessionStore: userSessionStore,
+                                                                            appSettings: appSettings,
+                                                                            appHooks: appHooks,
+                                                                            userIndicatorController: userIndicatorController)
+        let coordinator = WitlyOnboardingFlowCoordinator(parameters: onboardingParameters)
         coordinator.delegate = self
         
-        authenticationFlowCoordinator = coordinator
+        witlyOnboardingFlowCoordinator = coordinator
         coordinator.start()
-        
-        if storedAppRoute?.isAuthenticationRoute == true,
-           let storedAppRoute = storedAppRoute.take() {
-            coordinator.handleAppRoute(storedAppRoute, animated: false)
-        }
     }
     
     private func runPostSessionSetupTasks() async {

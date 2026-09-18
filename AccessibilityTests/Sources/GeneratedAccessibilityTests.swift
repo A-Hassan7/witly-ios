@@ -922,6 +922,18 @@ extension AccessibilityTests {
     func testWaveformCursorView() async throws {
         try await performAccessibilityAudit(named: "WaveformCursorView_Previews")
     }
+
+    func testWitlyOnboardingAuthScreen() async throws {
+        try await performAccessibilityAudit(named: "WitlyOnboardingAuthScreen_Previews")
+    }
+
+    func testWitlyOnboardingConnectScreen() async throws {
+        try await performAccessibilityAudit(named: "WitlyOnboardingConnectScreen_Previews")
+    }
+
+    func testWitlyOnboardingIntroScreen() async throws {
+        try await performAccessibilityAudit(named: "WitlyOnboardingIntroScreen_Previews")
+    }
 }
 
 // swiftlint:enable all
