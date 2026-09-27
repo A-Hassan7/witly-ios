@@ -40,6 +40,7 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
     
     init(roomID: String, timelineController: TimelineControllerProtocol, apiClient: AGChatAPIClient) {
         self.roomID = roomID
+        WitlyLog.info("suggestions: watching room \(roomID)")
         watcher = WitlyRoomTimelineWatcher(timelineController: timelineController)
         service = WitlySuggestionsService(apiClient: apiClient)
         
@@ -61,14 +62,17 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
     /// User-initiated regenerate (refresh icon) or retry-from-error. Always allowed, regardless of
     /// the Smart-timing debounce/cooldown state — those guardrails only gate *automatic* firing.
     func regenerate() {
+        WitlyLog.info("suggestions: regenerate requested for room \(roomID)")
         generate()
     }
     
     func insertSuggestion(_ suggestion: WitlySuggestion) {
+        WitlyLog.info("suggestions: inserted suggestion #\(suggestion.id) into composer")
         onInsertSuggestion?(suggestion.text)
     }
     
     func openWitly() {
+        WitlyLog.verbose("suggestions: ✨ button tapped")
         onOpenWitly?()
     }
     
@@ -85,6 +89,7 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
         state = WitlyRoomSuggestionsState(phase: .generating, suggestions: [])
         
         let context = watcher.recentContext()
+        WitlyLog.info("suggestions: generating for room \(roomID) (context: \(context.count) messages)")
         generationTask = Task { [weak self] in
             guard let self else { return }
             do {
@@ -94,24 +99,28 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
                     guard !Task.isCancelled else { return }
                     switch event {
                     case .suggestion(let index, let text, let tone):
+                        WitlyLog.verbose("suggestions: received suggestion #\(index) (tone: \(tone ?? "none"))")
                         received.append(WitlySuggestion(id: index, text: text, tone: tone))
                         state = WitlyRoomSuggestionsState(phase: .streaming, suggestions: received)
                     case .done:
+                        WitlyLog.info("suggestions: generation done for room \(roomID) (\(received.count) suggestions)")
                         if received.isEmpty {
                             state = WitlyRoomSuggestionsState(phase: .error(message: "No suggestions this time."), suggestions: [])
                         } else {
                             state = WitlyRoomSuggestionsState(phase: .ready, suggestions: received)
                         }
                     case .serverError(let code, _):
+                        WitlyLog.warning("suggestions: backend reported error (code: \(code))")
                         state = WitlyRoomSuggestionsState(phase: .error(message: Self.friendlyMessage(for: code)), suggestions: [])
                     }
                 }
             } catch {
                 guard !Task.isCancelled else { return }
                 WitlyLog.warning("suggestions: generation failed: \(type(of: error))")
-                let message = (error as? AGChatAPIError)?.status == 402
-                    ? "You're out of AI credits for now."
-                    : "Couldn't get suggestions right now."
+                let message =
+                    (error as? AGChatAPIError)?.status == 402
+                        ? "You're out of AI credits for now."
+                        : "Couldn't get suggestions right now."
                 state = WitlyRoomSuggestionsState(phase: .error(message: message), suggestions: [])
             }
         }
@@ -120,6 +129,7 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
     /// Never surface raw backend error strings verbatim (they're written for logs/admins, e.g.
     /// "credit_exceeded" codes) — map to one short, non-technical line.
     private static func friendlyMessage(for code: String) -> String {
-        code == "credit_exceeded" ? "You're out of AI credits for now." : "Couldn't get suggestions right now."
+        code == "credit_exceeded"
+            ? "You're out of AI credits for now." : "Couldn't get suggestions right now."
     }
 }

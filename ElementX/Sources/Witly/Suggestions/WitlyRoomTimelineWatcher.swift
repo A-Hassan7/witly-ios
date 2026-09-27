@@ -112,10 +112,12 @@ final class WitlyRoomTimelineWatcher {
         latestSeenTimestamp = newWatermark
         
         if sawNewInbound {
+            WitlyLog.info("suggestions: new inbound message — waiting \(Self.debounceInterval) before generating")
             onNewInboundMessage?()
             scheduleGeneration()
         } else if sawNewOwn {
             // The user replied before Witly fired — the pending suggestion round is moot.
+            WitlyLog.info("suggestions: own message sent — cancelling any pending generation")
             cancelPendingGeneration()
         }
     }
@@ -131,6 +133,7 @@ final class WitlyRoomTimelineWatcher {
                 return
             }
             lastFireDate = Date()
+            WitlyLog.info("suggestions: debounce elapsed — firing generation")
             onShouldGenerate?()
         }
     }

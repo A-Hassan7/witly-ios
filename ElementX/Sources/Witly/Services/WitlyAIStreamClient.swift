@@ -45,11 +45,13 @@ nonisolated struct WitlyAIStreamClient: Sendable {
                     let url = URL(string: "\(WitlyConfig.apiBase)/ai/stream/\(streamKey)")!
                     var request = URLRequest(url: url)
                     request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+                    WitlyLog.verbose("stream: opening \(streamKey)")
                     
                     let (bytes, response) = try await urlSession.bytes(for: request)
                     guard let http = response as? HTTPURLResponse,
                           (200..<300).contains(http.statusCode)
                     else {
+                        WitlyLog.warning("stream: failed to open \(streamKey)")
                         continuation.finish(throwing: WitlyAIStreamError(message: "Couldn't open the suggestion stream."))
                         return
                     }
@@ -82,6 +84,7 @@ nonisolated struct WitlyAIStreamClient: Sendable {
                     }
                     // The connection closed without a done/error event (e.g. the 5-minute relay TTL
                     // elapsed) — treat as a soft completion rather than an error.
+                    WitlyLog.verbose("stream: closed \(streamKey)")
                     continuation.finish()
                 } catch is CancellationError {
                     continuation.finish()

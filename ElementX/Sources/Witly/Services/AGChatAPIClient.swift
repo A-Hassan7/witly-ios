@@ -244,16 +244,22 @@ nonisolated struct AGChatAPIClient: Sendable {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
         }
         
+        // Never logs the token/body — only method + path, so this is safe at .info (visible by default).
+        WitlyLog.info("→ \(method) \(path)")
+        
         let data: Data
         let response: URLResponse
         do {
             (data, response) = try await urlSession.data(for: request)
         } catch let error as URLError where error.code == .timedOut {
+            WitlyLog.warning("← timeout \(method) \(path)")
             throw AGChatAPIError(status: -1, detail: "The server took too long to respond. Please try again.")
         }
         guard let http = response as? HTTPURLResponse else {
+            WitlyLog.warning("← no HTTP response \(method) \(path)")
             throw AGChatAPIError(status: -1, detail: "No HTTP response")
         }
+        WitlyLog.info("← \(http.statusCode) \(method) \(path)")
         
         // On 401: force a refresh and retry once (server-side invalidation / skew).
         if http.statusCode == 401, !retried {
@@ -263,7 +269,9 @@ nonisolated struct AGChatAPIClient: Sendable {
         }
         
         guard (200..<300).contains(http.statusCode) else {
-            throw AGChatAPIError(status: http.statusCode, detail: extractDetail(data, fallback: "\(http.statusCode)"))
+            let detail = extractDetail(data, fallback: "\(http.statusCode)")
+            WitlyLog.warning("← \(http.statusCode) \(method) \(path): \(detail)")
+            throw AGChatAPIError(status: http.statusCode, detail: detail)
         }
         
         if http.statusCode == 204 || data.isEmpty {
