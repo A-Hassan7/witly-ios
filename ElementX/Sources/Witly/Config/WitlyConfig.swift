@@ -33,7 +33,7 @@ nonisolated enum WitlyConfig {
     // The backend API base for local dev. Points at the deployed control plane; override via
     // `WitlyAPIBase` in Info.plist / Witly.xcconfig for other environments.
     private static let devAPIBase = "https://api.agchat.uk"
-    private static let devSupabaseURL = "https://ulznjrbhhnkqyajsarxx.supabase.co"
+    private static let devSupabaseURL = "https://supabase.agchat.uk"
     private static let devSupabaseKey = "sb_publishable_5q4-qUsxEe6M1289ZkkBsQ_shfB4uEv"
     
     private static func plistString(_ key: String) -> String? {
