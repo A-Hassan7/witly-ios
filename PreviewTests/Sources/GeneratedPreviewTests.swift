@@ -1615,6 +1615,13 @@ extension PreviewTests {
     }
 
     @Test
+    func witlyOnboardingAccountSetupScreen() async throws {
+        for (index, preview) in WitlyOnboardingAccountSetupScreen_Previews._allPreviews.enumerated() {
+            try await assertSnapshots(matching: preview, step: index)
+        }
+    }
+
+    @Test
     func witlyOnboardingAuthScreen() async throws {
         for (index, preview) in WitlyOnboardingAuthScreen_Previews._allPreviews.enumerated() {
             try await assertSnapshots(matching: preview, step: index)
@@ -1631,6 +1638,13 @@ extension PreviewTests {
     @Test
     func witlyOnboardingIntroScreen() async throws {
         for (index, preview) in WitlyOnboardingIntroScreen_Previews._allPreviews.enumerated() {
+            try await assertSnapshots(matching: preview, step: index)
+        }
+    }
+
+    @Test
+    func witlySuggestionsBarView() async throws {
+        for (index, preview) in WitlySuggestionsBarView_Previews._allPreviews.enumerated() {
             try await assertSnapshots(matching: preview, step: index)
         }
     }

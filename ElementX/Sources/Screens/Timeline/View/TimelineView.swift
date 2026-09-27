@@ -36,7 +36,8 @@ struct TimelineView: View {
                 let actions = TimelineItemMenuActionProvider(timelineItem: info.item,
                                                              canCurrentUserSendMessage: timelineContext.viewState.canCurrentUserSendMessage,
                                                              canCurrentUserRedactSelf: timelineContext.viewState.canCurrentUserRedactSelf,
-                                                             canCurrentUserRedactOthers: timelineContext.viewState.canCurrentUserRedactOthers,
+                                                             canCurrentUserRedactOthers: timelineContext.viewState
+                                                                 .canCurrentUserRedactOthers,
                                                              canCurrentUserPin: timelineContext.viewState.canCurrentUserPin,
                                                              pinnedEventIDs: timelineContext.viewState.pinnedEventIDs,
                                                              isViewSourceEnabled: timelineContext.viewState.isViewSourceEnabled,
@@ -61,14 +62,16 @@ struct TimelineView: View {
                 ReadReceiptsSummaryView(orderedReadReceipts: $0.orderedReceipts)
                     .environmentObject(timelineContext)
             }
-            .translationPresentation(isPresented: $timelineContext.showTranslation, text: timelineContext.textToBeTranslated ?? "")
+            .translationPresentation(isPresented: $timelineContext.showTranslation,
+                                     text: timelineContext.textToBeTranslated ?? "")
             .onChange(of: timelineContext.showTranslation) { oldValue, newValue in
                 if oldValue, !newValue {
                     // clear texts after translation was dismissed
                     timelineContext.textToBeTranslated = nil
                 }
             }
-            .onDrop(of: ["public.item", "public.file-url"], isTargeted: $dragOver) { providers -> Bool in
+            .onDrop(of: ["public.item", "public.file-url"], isTargeted: $dragOver) {
+                providers -> Bool in
                 let supportedProviders = providers.filter(\.isSupportedForPasteOrDrop)
                 
                 guard !supportedProviders.isEmpty else {
@@ -91,9 +94,12 @@ struct TimelineViewRepresentable: UIViewControllerRepresentable {
                                     isReadMarkerVisible: $viewModelContext.isReadMarkerVisible,
                                     hasNewMessagesAtBottom: $viewModelContext.hasNewMessagesAtBottom,
                                     floatingDate: $viewModelContext.floatingDate,
-                                    scrollToBottomPublisher: viewModelContext.viewState.timelineState.scrollToBottomPublisher,
-                                    scrollToFirstItemForDatePublisher: viewModelContext.viewState.timelineState.scrollToFirstItemForDatePublisher,
-                                    scrollToReadMarkerPublisher: viewModelContext.viewState.timelineState.scrollToReadMarkerPublisher)
+                                    scrollToBottomPublisher: viewModelContext.viewState.timelineState
+                                        .scrollToBottomPublisher,
+                                    scrollToFirstItemForDatePublisher: viewModelContext.viewState.timelineState
+                                        .scrollToFirstItemForDatePublisher,
+                                    scrollToReadMarkerPublisher: viewModelContext.viewState.timelineState
+                                        .scrollToReadMarkerPublisher)
     }
     
     func updateUIViewController(_ uiViewController: TimelineTableViewController, context: Context) {
@@ -115,15 +121,21 @@ struct TimelineViewRepresentable: UIViewControllerRepresentable {
         
         /// Updates the specified table view's properties from the current view state.
         func update(tableViewController: TimelineTableViewController) {
-            if tableViewController.isSwitchingTimelines != context.viewState.timelineState.isSwitchingTimelines {
+            if tableViewController.isSwitchingTimelines
+                != context.viewState.timelineState.isSwitchingTimelines {
                 // Must come before timelineItemsDictionary in order to disable animations.
-                tableViewController.isSwitchingTimelines = context.viewState.timelineState.isSwitchingTimelines
+                tableViewController.isSwitchingTimelines =
+                    context.viewState.timelineState.isSwitchingTimelines
             }
-            if tableViewController.timelineItemsDictionary != context.viewState.timelineState.itemsDictionary {
-                tableViewController.timelineItemsDictionary = context.viewState.timelineState.itemsDictionary
+            if tableViewController.timelineItemsDictionary
+                != context.viewState.timelineState.itemsDictionary {
+                tableViewController.timelineItemsDictionary =
+                    context.viewState.timelineState.itemsDictionary
             }
-            if tableViewController.paginationState != context.viewState.timelineState.paginationState {
-                tableViewController.paginationState = context.viewState.timelineState.paginationState
+            if tableViewController.paginationState
+                != context.viewState.timelineState.paginationState {
+                tableViewController.paginationState =
+                    context.viewState.timelineState.paginationState
             }
             if tableViewController.isLive != context.viewState.timelineState.isLive {
                 tableViewController.isLive = context.viewState.timelineState.isLive
@@ -134,8 +146,10 @@ struct TimelineViewRepresentable: UIViewControllerRepresentable {
             if tableViewController.hideTimelineMedia != context.viewState.hideTimelineMedia {
                 tableViewController.hideTimelineMedia = context.viewState.hideTimelineMedia
             }
-            if tableViewController.readMarkerUniqueID != context.viewState.timelineState.readMarkerUniqueID {
-                tableViewController.readMarkerUniqueID = context.viewState.timelineState.readMarkerUniqueID
+            if tableViewController.readMarkerUniqueID
+                != context.viewState.timelineState.readMarkerUniqueID {
+                tableViewController.readMarkerUniqueID =
+                    context.viewState.timelineState.readMarkerUniqueID
             }
             
             if tableViewController.typingMembers.members != context.viewState.typingMembers {
@@ -156,6 +170,9 @@ struct TimelineView_Previews: PreviewProvider { // Not testable as this preview 
                                                          name: "Preview room"))
     static let roomViewModel = RoomScreenViewModel.mock(roomProxyMock: roomProxyMock)
     static let composerViewModel = ComposerToolbarViewModel.mock()
+    static let witlySuggestionsViewModel = WitlyRoomSuggestionsViewModel(roomID: "stable_id",
+                                                                         timelineController: TimelineControllerMock(.init()),
+                                                                         apiClient: AGChatAPIClient(session: WitlySession()))
     static let timelineViewModel = {
         let appSettings = AppSettings.volatile()
         
@@ -176,7 +193,8 @@ struct TimelineView_Previews: PreviewProvider { // Not testable as this preview 
         ElementNavigationStack {
             RoomScreen(context: roomViewModel.context,
                        timelineContext: timelineViewModel.context,
-                       composerToolbar: ComposerToolbar(context: composerViewModel.context))
+                       composerToolbar: ComposerToolbar(context: composerViewModel.context),
+                       witlySuggestionsViewModel: witlySuggestionsViewModel)
         }
     }
 }

@@ -58,6 +58,8 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
     private var timelineViewModel: TimelineViewModelProtocol
     private var composerViewModel: ComposerToolbarViewModelProtocol
     private let appSettings: AppSettings
+    // WITLY SEAM: per-room suggestion state/orchestration, mounted above the composer in RoomScreen.
+    private let witlySuggestionsViewModel: WitlyRoomSuggestionsViewModel
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -110,6 +112,21 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
                                                          analyticsService: parameters.analytics,
                                                          composerDraftService: parameters.composerDraftService)
         self.composerViewModel = composerViewModel
+        
+        // WITLY SEAM: independent of the composer/timeline view models above — see
+        // ElementX/Sources/Witly/AGENTS.md and PATCHES.md for why this reuses `timelineController`
+        // and `shareText(_:)` rather than adding further core seams.
+        witlySuggestionsViewModel = WitlyRoomSuggestionsViewModel(roomID: parameters.roomProxy.id,
+                                                                  timelineController: parameters.timelineController,
+                                                                  apiClient: AGChatAPIClient(session: WitlySession()))
+        
+        let userIndicatorController = parameters.userIndicatorController
+        witlySuggestionsViewModel.onInsertSuggestion = { [weak self] text in self?.shareText(text) }
+        witlySuggestionsViewModel.onOpenWitly = { [weak userIndicatorController] in
+            // No Witly panel exists yet (out of scope for this task) — a clean, stable integration
+            // point to swap for a real `presentWitlyPanel` action later.
+            userIndicatorController?.submitIndicator(UserIndicator(title: "Witly — coming soon"))
+        }
     }
     
     // MARK: - Public
@@ -125,13 +142,16 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
                 case .displayReportContent(let itemID, let senderID):
                     actionsSubject.send(.presentReportContent(itemID: itemID, senderID: senderID))
                 case .displayCameraPicker:
-                    actionsSubject.send(.presentMediaUploadPicker(mode: .init(source: .camera, selectionType: .multiple(galleryEnabled: appSettings.galleryEnabled)),
+                    actionsSubject.send(.presentMediaUploadPicker(mode: .init(source: .camera,
+                                                                              selectionType: .multiple(galleryEnabled: appSettings.galleryEnabled)),
                                                                   caption: composerViewModel.context.plainComposerText))
                 case .displayMediaPicker:
-                    actionsSubject.send(.presentMediaUploadPicker(mode: .init(source: .photoLibrary, selectionType: .multiple(galleryEnabled: appSettings.galleryEnabled)),
+                    actionsSubject.send(.presentMediaUploadPicker(mode: .init(source: .photoLibrary,
+                                                                              selectionType: .multiple(galleryEnabled: appSettings.galleryEnabled)),
                                                                   caption: composerViewModel.context.plainComposerText))
                 case .displayDocumentPicker:
-                    actionsSubject.send(.presentMediaUploadPicker(mode: .init(source: .documents(), selectionType: .multiple(galleryEnabled: appSettings.galleryEnabled)),
+                    actionsSubject.send(.presentMediaUploadPicker(mode: .init(source: .documents(),
+                                                                              selectionType: .multiple(galleryEnabled: appSettings.galleryEnabled)),
                                                                   caption: composerViewModel.context.plainComposerText))
                 case .displayMediaPreview(let mediaPreviewViewModel):
                     roomViewModel.displayMediaPreview(mediaPreviewViewModel)
@@ -144,7 +164,7 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
                 case .displayMediaUploadPreviewScreen(let mediaURLs):
                     actionsSubject.send(.presentMediaUploadPreviewScreen(mediaURLs: mediaURLs,
                                                                          caption: composerViewModel.context.plainComposerText))
-                case .displaySenderDetails(userID: let userID):
+                case .displaySenderDetails(let userID):
                     actionsSubject.send(.presentRoomMemberDetails(userID: userID))
                 case .displayMessageForwarding(let forwardingItem):
                     actionsSubject.send(.presentMessageForwarding(forwardingItem: forwardingItem))
@@ -161,7 +181,7 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
                     actionsSubject.send(.presentThread(threadRootEventID: eventID, focussedEventID: nil))
                 case .composer(let action):
                     composerViewModel.process(timelineAction: action)
-                case .hasScrolled(direction: let direction):
+                case .hasScrolled(let direction):
                     roomViewModel.timelineHasScrolled(direction: direction)
                 case .displayRoom(let roomID, let via):
                     actionsSubject.send(.presentRoom(roomID: roomID, via: via))
@@ -186,7 +206,7 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
                 guard let self else { return }
                 
                 switch action {
-                case .focusEvent(eventID: let eventID):
+                case .focusEvent(let eventID):
                     focusOnEvent(FocusEvent(eventID: eventID, shouldSetPin: false))
                 case .displayPinnedEventsTimeline:
                     actionsSubject.send(.presentPinnedEventsTimeline)
@@ -241,6 +261,7 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
     func stop() {
         composerViewModel.stop()
         roomViewModel.stop()
+        witlySuggestionsViewModel.stop()
     }
     
     func toPresentable() -> AnyView {
@@ -248,7 +269,8 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
         
         return AnyView(RoomScreen(context: roomViewModel.context,
                                   timelineContext: timelineViewModel.context,
-                                  composerToolbar: composerToolbar))
+                                  composerToolbar: composerToolbar,
+                                  witlySuggestionsViewModel: witlySuggestionsViewModel))
     }
 }
 

@@ -15,6 +15,8 @@ struct RoomScreen: View {
     @ObservedObject private var context: RoomScreenViewModelType.Context
     @ObservedObject private var timelineContext: TimelineViewModelType.Context
     let composerToolbar: ComposerToolbar
+    // WITLY SEAM: per-room suggestion bar, mounted above the composer below.
+    let witlySuggestionsViewModel: WitlyRoomSuggestionsViewModel
     @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverEnabled
     
     enum MarkAsReadSource {
@@ -28,10 +30,12 @@ struct RoomScreen: View {
     
     init(context: RoomScreenViewModelType.Context,
          timelineContext: TimelineViewModelType.Context,
-         composerToolbar: ComposerToolbar) {
+         composerToolbar: ComposerToolbar,
+         witlySuggestionsViewModel: WitlyRoomSuggestionsViewModel) {
         self.context = context
         self.timelineContext = timelineContext
         self.composerToolbar = composerToolbar
+        self.witlySuggestionsViewModel = witlySuggestionsViewModel
     }
     
     var body: some View {
@@ -61,7 +65,8 @@ struct RoomScreen: View {
                         }
                         TimelineScrollButton(isHidden: !timelineContext.viewState.shouldShowScrollToBottomButton,
                                              showsBadge: scrollToBottomShowsBadge,
-                                             onLongPress: scrollToBottomShowsBadge ? { revealMarkAsReadPill(source: .down) } : nil) {
+                                             onLongPress: scrollToBottomShowsBadge
+                                                 ? { revealMarkAsReadPill(source: .down) } : nil) {
                             dismissMarkAsReadPill()
                             timelineContext.send(viewAction: .scrollToBottom)
                         }
@@ -74,8 +79,15 @@ struct RoomScreen: View {
             .background(Color.compound.bgCanvasDefault.ignoresSafeArea())
             .topBanners([
                 TopBannerLayer(verticalBanners: [
-                    TopBannerItem(pinnedItemsBanner, isVisible: context.viewState.shouldShowPinnedEventsBanner && !isVoiceOverEnabled),
-                    TopBannerItem(liveLocationBanner, isVisible: context.viewState.isSharingLiveLocation && !isVoiceOverEnabled)
+                    // WITLY SEAM (I2-1): restrained "still catching up" notice, distinct from errors.
+                    TopBannerItem(witlySyncingBanner,
+                                  isVisible: isCatchingUpOnHistory && !isVoiceOverEnabled),
+                    TopBannerItem(pinnedItemsBanner,
+                                  isVisible: context.viewState.shouldShowPinnedEventsBanner
+                                      && !isVoiceOverEnabled),
+                    TopBannerItem(liveLocationBanner,
+                                  isVisible: context.viewState.isSharingLiveLocation
+                                      && !isVoiceOverEnabled)
                 ]),
                 // This can overlay on top of the stacked banners
                 TopBannerLayer(knockRequestsBanner, isVisible: context.viewState.shouldSeeKnockRequests)
@@ -85,7 +97,8 @@ struct RoomScreen: View {
                 // hides itself and the .overlay layout above would permanently obscure the top of
                 // the timeline. So whenever VoiceOver is enabled we use a safe area inset to
                 // vertically stack it above the timeline instead.
-                if context.viewState.shouldShowPinnedEventsBanner || context.viewState.isSharingLiveLocation, isVoiceOverEnabled {
+                if context.viewState.shouldShowPinnedEventsBanner
+                    || context.viewState.isSharingLiveLocation, isVoiceOverEnabled {
                     VStack(spacing: 0) {
                         if context.viewState.shouldShowPinnedEventsBanner {
                             pinnedItemsBanner
@@ -103,13 +116,18 @@ struct RoomScreen: View {
                         context.send(viewAction: .footerViewAction(action))
                     }
                     
+                    // WITLY SEAM: the compact suggestion bar sits between the timeline and the
+                    // standard composer, which remains Element's own and unmodified below.
+                    WitlySuggestionsBarContainer(viewModel: witlySuggestionsViewModel)
+                    
                     composer
                         .padding(.top, 8)
                         .background(Color.compound.bgCanvasDefault.ignoresSafeArea())
                         .environmentObject(timelineContext)
                         .environment(\.timelineContext, timelineContext)
                         // Make sure the reply header honours the hideTimelineMedia setting too.
-                        .environment(\.shouldAutomaticallyLoadImages, !timelineContext.viewState.hideTimelineMedia)
+                        .environment(\.shouldAutomaticallyLoadImages,
+                                     !timelineContext.viewState.hideTimelineMedia)
                         .collapsedInPlace(isSelectionActive)
                 }
             }
@@ -137,6 +155,15 @@ struct RoomScreen: View {
         } onStop: {
             context.send(viewAction: .tappedStopLiveLocation)
         }
+    }
+    
+    // WITLY SEAM (I2-1)
+    private var isCatchingUpOnHistory: Bool {
+        timelineContext.viewState.timelineState.paginationState.backward == .paginating
+    }
+    
+    private var witlySyncingBanner: some View {
+        WitlySyncingBanner(text: "Catching up on older messages…")
     }
     
     private var pinnedItemsBanner: some View {
@@ -348,19 +375,24 @@ struct RoomScreen_Previews: PreviewProvider, TestablePreview {
     static let tombstonedViewModels = makeViewModels(hasSuccessor: true)
     static let selectingViewModels = makeViewModels(isSelecting: true)
     static let composerViewModel = ComposerToolbarViewModel.mock()
+    static let witlySuggestionsViewModel = WitlyRoomSuggestionsViewModel(roomID: "stable_id",
+                                                                         timelineController: TimelineControllerMock(.init()),
+                                                                         apiClient: AGChatAPIClient(session: WitlySession()))
     
     static var previews: some View {
         ElementNavigationStack {
             RoomScreen(context: viewModels.room.context,
                        timelineContext: viewModels.timeline.context,
-                       composerToolbar: ComposerToolbar(context: composerViewModel.context))
+                       composerToolbar: ComposerToolbar(context: composerViewModel.context),
+                       witlySuggestionsViewModel: witlySuggestionsViewModel)
         }
         .previewDisplayName("Normal")
         
         ElementNavigationStack {
             RoomScreen(context: readOnlyViewModels.room.context,
                        timelineContext: readOnlyViewModels.timeline.context,
-                       composerToolbar: ComposerToolbar(context: composerViewModel.context))
+                       composerToolbar: ComposerToolbar(context: composerViewModel.context),
+                       witlySuggestionsViewModel: witlySuggestionsViewModel)
         }
         .previewDisplayName("Read-only")
         .snapshotPreferences(expect: readOnlyViewModels.room.context.$viewState.map { !$0.canSendMessage })
@@ -368,7 +400,8 @@ struct RoomScreen_Previews: PreviewProvider, TestablePreview {
         ElementNavigationStack {
             RoomScreen(context: tombstonedViewModels.room.context,
                        timelineContext: tombstonedViewModels.timeline.context,
-                       composerToolbar: ComposerToolbar(context: composerViewModel.context))
+                       composerToolbar: ComposerToolbar(context: composerViewModel.context),
+                       witlySuggestionsViewModel: witlySuggestionsViewModel)
         }
         .previewDisplayName("Tombstoned")
         .snapshotPreferences(expect: tombstonedViewModels.room.context.$viewState.map(\.hasSuccessor))
@@ -376,7 +409,8 @@ struct RoomScreen_Previews: PreviewProvider, TestablePreview {
         ElementNavigationStack {
             RoomScreen(context: selectingViewModels.room.context,
                        timelineContext: selectingViewModels.timeline.context,
-                       composerToolbar: ComposerToolbar(context: composerViewModel.context))
+                       composerToolbar: ComposerToolbar(context: composerViewModel.context),
+                       witlySuggestionsViewModel: witlySuggestionsViewModel)
         }
         .previewDisplayName("Selecting")
         .snapshotPreferences(expect: selectingViewModels.timeline.context.$viewState.map(\.selection.isActive))
@@ -407,7 +441,9 @@ struct RoomScreen_Previews: PreviewProvider, TestablePreview {
                                                   timelineControllerFactory: TimelineControllerFactoryMock(.init()))
         
         if isSelecting {
-            let eventIDs = timelineController.timelineItems.compactMap { ($0 as? EventBasedTimelineItemProtocol)?.id.eventID }
+            let eventIDs = timelineController.timelineItems.compactMap {
+                ($0 as? EventBasedTimelineItemProtocol)?.id.eventID
+            }
             timelineViewModel.state.selection.selectedEventIDs = Set(eventIDs.prefix(2))
         }
         

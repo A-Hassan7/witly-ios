@@ -89,6 +89,9 @@ struct HighlightedTimelineItemTimeline_Previews: PreviewProvider {
     static let roomViewModel = RoomScreenViewModel.mock(roomProxyMock: roomProxyMock)
     static let focussedEventID = "TimelineFixtures.default.5"
     static let composerViewModel = ComposerToolbarViewModel.mock()
+    static let witlySuggestionsViewModel = WitlyRoomSuggestionsViewModel(roomID: "stable_id",
+                                                                         timelineController: TimelineControllerMock(.init()),
+                                                                         apiClient: AGChatAPIClient(session: WitlySession()))
     static let timelineViewModel = {
         let appSettings = AppSettings.volatile()
         
@@ -110,7 +113,8 @@ struct HighlightedTimelineItemTimeline_Previews: PreviewProvider {
         ElementNavigationStack {
             RoomScreen(context: roomViewModel.context,
                        timelineContext: timelineViewModel.context,
-                       composerToolbar: ComposerToolbar(context: composerViewModel.context))
+                       composerToolbar: ComposerToolbar(context: composerViewModel.context),
+                       witlySuggestionsViewModel: witlySuggestionsViewModel)
         }
         .previewDisplayName("Timeline")
     }

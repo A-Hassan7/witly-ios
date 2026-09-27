@@ -37,6 +37,22 @@ nonisolated struct AGChatAPIError: Error, Sendable {
     let detail: String
 }
 
+// MARK: - AI suggestions
+
+/// Body for `POST /suggestions`. `variables` is untyped JSON (feature-specific), so it's carried as
+/// `[String: Any]` and encoded manually rather than via `Encodable` (see `request(_:method:body:)`).
+nonisolated struct SuggestionsResponse: Sendable, Codable {
+    let taskId: String
+    let streamKey: String
+    let requestId: String
+    
+    enum CodingKeys: String, CodingKey {
+        case taskId = "task_id"
+        case streamKey = "stream_key"
+        case requestId = "request_id"
+    }
+}
+
 // MARK: - Bridges
 
 nonisolated enum BridgeService: String, Sendable, Codable {
@@ -45,12 +61,31 @@ nonisolated enum BridgeService: String, Sendable, Codable {
     case telegram
 }
 
+/// Live remote-network connectivity, refreshed by the backend's health worker (~60s, or ~5s while
+/// a bridge is still provisioning/logging in) from the bridge's own `whoami`. Distinct from
+/// `loginStatus` (the control-plane's record of the login *flow*) — `remoteState` is the ongoing
+/// health/connectivity signal once a login exists. `NOT_PROVISIONED` is the default for any bridge
+/// that isn't deployed/registered yet and is not an error state.
+nonisolated enum BridgeRemoteState: String, Sendable, Codable {
+    case notProvisioned = "NOT_PROVISIONED"
+    case loggedOut = "LOGGED_OUT"
+    case connected = "CONNECTED"
+    case backfilling = "BACKFILLING"
+    case transientDisconnect = "TRANSIENT_DISCONNECT"
+    case badCredentials = "BAD_CREDENTIALS"
+}
+
 nonisolated struct BridgeStatusResponse: Sendable, Codable {
     let bridgeId: String
     let service: BridgeService
     let deployStatus: String
     let registrationStatus: String
     let loginStatus: String
+    let remoteState: BridgeRemoteState
+    /// The last time `remoteState` was *successfully* refreshed — if the bridge becomes
+    /// unreachable, `remoteState` is left at its last-known value rather than reset, so check this
+    /// for staleness before trusting it after a long gap. `nil` if it's never been checked.
+    let remoteStateCheckedAt: Date?
     
     enum CodingKeys: String, CodingKey {
         case bridgeId = "bridge_id"
@@ -58,6 +93,8 @@ nonisolated struct BridgeStatusResponse: Sendable, Codable {
         case deployStatus = "deploy_status"
         case registrationStatus = "registration_status"
         case loginStatus = "login_status"
+        case remoteState = "remote_state"
+        case remoteStateCheckedAt = "remote_state_checked_at"
     }
     
     var isReadyForLogin: Bool {
@@ -111,8 +148,10 @@ nonisolated struct LoginStep: Sendable, Codable {
 /// Typed client for the AGChat control-plane API, ported from the web fork's `agchatApi.ts`.
 ///
 /// Auth: bearer Supabase token from `WitlySession`; on a 401 it forces a token refresh and retries
-/// once (server-side invalidation / clock skew). The endpoint surface is unchanged from web — only
-/// the iP1 provisioning subset is exposed here; bridges + AI land in later phases.
+/// once (server-side invalidation / clock skew). The endpoint surface is unchanged from web —
+/// provisioning, bridges, and the `POST /suggestions` AI entry point are exposed here; the SSE
+/// stream itself is read separately via `WitlyAIStreamClient` (`GET /ai/stream/{stream_key}` is
+/// unauthenticated — a capability token in the URL — so it doesn't go through `request(_:)`).
 nonisolated struct AGChatAPIClient: Sendable {
     private let session: WitlySession
     private let urlSession: URLSession
@@ -137,6 +176,24 @@ nonisolated struct AGChatAPIClient: Sendable {
     
     func deleteProvision() async throws {
         let _: EmptyResponse = try await request("/provision", method: "DELETE")
+    }
+    
+    // MARK: - AI
+    
+    /// Kick off an AI generation request. `variables` is feature-specific untyped JSON (e.g.
+    /// `["messages": [["sender_id": ..., "is_own": ..., "body": ...], ...]]` for `suggestions/mix`).
+    /// The response's `streamKey` is then read via `WitlyAIStreamClient` — this call only enqueues
+    /// the generation, it does not itself return suggestions.
+    func postSuggestions(feature: String, variables: [String: Any], version: String? = nil,
+                         roomId: String? = nil) async throws -> SuggestionsResponse {
+        var body: [String: Any] = ["feature": feature, "variables": variables]
+        if let version {
+            body["version"] = version
+        }
+        if let roomId {
+            body["room_id"] = roomId
+        }
+        return try await request("/suggestions", method: "POST", body: body)
     }
     
     // MARK: - Bridges
@@ -210,10 +267,36 @@ nonisolated struct AGChatAPIClient: Sendable {
         }
         
         if http.statusCode == 204 || data.isEmpty {
-            return try JSONDecoder().decode(T.self, from: Data("{}".utf8))
+            return try Self.jsonDecoder.decode(T.self, from: Data("{}".utf8))
         }
-        return try JSONDecoder().decode(T.self, from: data)
+        return try Self.jsonDecoder.decode(T.self, from: data)
     }
+    
+    /// The backend emits naive (no timezone suffix) UTC timestamps, e.g. `remote_state_checked_at`
+    /// (Python's `datetime.isoformat()`), which Foundation's default/`.iso8601` strategies can't
+    /// parse (they require a timezone). Try with-fractional-seconds first, then without.
+    private static let jsonDecoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        let withFractional = DateFormatter()
+        withFractional.locale = Locale(identifier: "en_US_POSIX")
+        withFractional.timeZone = TimeZone(identifier: "UTC")
+        withFractional.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        
+        let withoutFractional = DateFormatter()
+        withoutFractional.locale = Locale(identifier: "en_US_POSIX")
+        withoutFractional.timeZone = TimeZone(identifier: "UTC")
+        withoutFractional.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let string = try container.decode(String.self)
+            if let date = withFractional.date(from: string) ?? withoutFractional.date(from: string) {
+                return date
+            }
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unrecognised date format: \(string)")
+        }
+        return decoder
+    }()
     
     private func extractDetail(_ data: Data, fallback: String) -> String {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],

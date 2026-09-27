@@ -923,6 +923,10 @@ extension AccessibilityTests {
         try await performAccessibilityAudit(named: "WaveformCursorView_Previews")
     }
 
+    func testWitlyOnboardingAccountSetupScreen() async throws {
+        try await performAccessibilityAudit(named: "WitlyOnboardingAccountSetupScreen_Previews")
+    }
+
     func testWitlyOnboardingAuthScreen() async throws {
         try await performAccessibilityAudit(named: "WitlyOnboardingAuthScreen_Previews")
     }
@@ -933,6 +937,10 @@ extension AccessibilityTests {
 
     func testWitlyOnboardingIntroScreen() async throws {
         try await performAccessibilityAudit(named: "WitlyOnboardingIntroScreen_Previews")
+    }
+
+    func testWitlySuggestionsBarView() async throws {
+        try await performAccessibilityAudit(named: "WitlySuggestionsBarView_Previews")
     }
 }
 

@@ -274,6 +274,7 @@
 		29E411E37D3FBF3899B3ED69 /* UserDefaultsProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CCA4547BE58E17899E95CDE /* UserDefaultsProtocol.swift */; };
 		29EE1791E0AFA1ABB7F23D2F /* GZIP in Frameworks */ = {isa = PBXBuildFile; productRef = 1BCD21310B997A6837B854D6 /* GZIP */; };
 		2A4B7856611589DD7B1B36CA /* SearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79A78330B9329E3A99E4105 /* SearchScreen.swift */; };
+		2A4C03CCAB0429292CF974FD /* WitlySuggestionsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E99676938297E7FBC58AB6 /* WitlySuggestionsBarView.swift */; };
 		2A4F8B76E1F99DE95D5867E6 /* ClassicAppManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633BAD3D9BB44B2AED7CBB93 /* ClassicAppManagerMock.swift */; };
 		2A56B00B070F83E0FE571193 /* TimelineMediaPreviewDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18A454132A5A5247802821E /* TimelineMediaPreviewDataSource.swift */; };
 		2A61D2B4A225332CECA3B937 /* ReportRoomScreenViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20403084A320D588ACED200 /* ReportRoomScreenViewModelProtocol.swift */; };
@@ -565,6 +566,7 @@
 		588411C8FD72B2A2DFE5F7DE /* XCUIElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = E992D7B8BE54B2AB454613AF /* XCUIElement.swift */; };
 		5897A59DDBD3592282092223 /* MediaSourceProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49B9785E3AD7D1C15A29F2F /* MediaSourceProxy.swift */; };
 		58F357A9D130A654ABCB1638 /* RageshakeConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC598338E7CF41107293AB5 /* RageshakeConfiguration.swift */; };
+		58F6D1B7DED284D853869DD4 /* WitlyIndeterminateBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4E34A7425405726157FE1F /* WitlyIndeterminateBar.swift */; };
 		592A5B88471676D6F50B9798 /* SearchScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6B10AEA5983B4A2336387B /* SearchScreenCoordinator.swift */; };
 		5992EF10AA157EBD97D88910 /* AudioRecorderState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6569593FA36B22259E806A67 /* AudioRecorderState.swift */; };
 		59C41313AED7566C3AC51163 /* RoomSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A953B6C0C431DBF4DD00B4 /* RoomSummary.swift */; };
@@ -610,6 +612,7 @@
 		6189B4ABD535CE526FA1107B /* StartChatViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DF438EAFC732D2D95D34BF6 /* StartChatViewModelTests.swift */; };
 		61941DEE5F3834765770BE01 /* InviteUsersScreenSelectedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F32E0B4B83D2A11EE8D011 /* InviteUsersScreenSelectedItem.swift */; };
 		61A36B9BB2ADE36CEFF5E98C /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E93A1BE7D8A2EBCAD51EEB4 /* Array.swift */; };
+		62051CD89B83FB611ECA3487 /* WitlyRoomSuggestionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 087043816BCFAF877B01CAC6 /* WitlyRoomSuggestionsViewModel.swift */; };
 		62441024BDDA6B4CA86E584F /* test_audio.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 68F8744C32ACA0821A771EBB /* test_audio.mp3 */; };
 		62684AECDFC5C7DC989CBD9E /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 7B6BC3219ADD8AA0311D2B86 /* SnapshotTesting */; };
 		626A7801367FEFCC21CA6E11 /* WitlyOnboardingFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB816D9211DB9971E3F51ADC /* WitlyOnboardingFlowCoordinator.swift */; };
@@ -697,6 +700,7 @@
 		6CAADDC6318E41C7D7AA9526 /* SpaceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646B50583A2CE6DA67F7739A /* SpaceScreen.swift */; };
 		6CBC544A7CC4DDDBDED4D0A6 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 4B1F71AC585827E6C416C15A /* AppIcon.icon */; };
 		6CD61FAF03E8986523C2ABB8 /* StartChatScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3005886F00029F058DB62BE /* StartChatScreenCoordinator.swift */; };
+		6D341FAA7CD03C5F795A286F /* WitlyOnboardingAccountSetupCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF1FC98D6EAD330754FB1240 /* WitlyOnboardingAccountSetupCoordinator.swift */; };
 		6DC8E43BA04AC2AC4EB2EB97 /* AnalyticsPromptScreenModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18486B87745B1811E7FBD3D2 /* AnalyticsPromptScreenModels.swift */; };
 		6E03A710799E6C65C0AB36BC /* TargetConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D829FD8958376614504B18 /* TargetConfiguration.swift */; };
 		6E0C68918BEC5D27A4830BA6 /* PlaybackSpeedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDBB8E5436E1BE0D6814BB7D /* PlaybackSpeedButton.swift */; };
@@ -1057,6 +1061,7 @@
 		A2357AA4A188BC37085BC6F0 /* EditRoomAddressScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5FDFAA04174CC99FB66391C /* EditRoomAddressScreenViewModel.swift */; };
 		A23B8B27A1436A1049EEF68E /* InfoPlistReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A580295A56B55A856CC4084 /* InfoPlistReader.swift */; };
 		A2434D4DFB49A68E5CD0F53C /* MediaLoaderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A02406480C351B8C6E0682C /* MediaLoaderProtocol.swift */; };
+		A30A55105908F513230D38E2 /* WitlySyncingBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4885C18EB50E3A2CB9B1057E /* WitlySyncingBanner.swift */; };
 		A32384E3D85CA65342D3A908 /* TimelineMediaPreviewRedactConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75FE3F524B575D53787868C /* TimelineMediaPreviewRedactConfirmationView.swift */; };
 		A33784831AD880A670CAA9F9 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04DF593C3F7AF4B2FBAEB05D /* FileManager.swift */; };
 		A36AD251013402EDBD666C75 /* AppMediatorMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BAC027034248429A438886B /* AppMediatorMock.swift */; };
@@ -1167,6 +1172,7 @@
 		B5E455C9689EA600EDB3E9E0 /* NavigationRootCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA28F29C9F93E93CC3C2C715 /* NavigationRootCoordinator.swift */; };
 		B6048166B4AA4CEFEA9B77A6 /* InfoPlistReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A580295A56B55A856CC4084 /* InfoPlistReader.swift */; };
 		B6064D82FCDCB829601C1F59 /* SecureBackupLogoutConfirmationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37FEE10AB666891E6A675E5E /* SecureBackupLogoutConfirmationScreen.swift */; };
+		B6143A6CF1F626485676F4F5 /* WitlyAIStreamClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 505DED57BD5592F2F071D82B /* WitlyAIStreamClient.swift */; };
 		B6B62437B92B6CA4083AA899 /* SessionDirectories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C2067FF58B4996323EB40C /* SessionDirectories.swift */; };
 		B6DA66EFC13A90846B625836 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 91DE43B8815918E590912DDA /* InfoPlist.strings */; };
 		B6DF6B6FA8734B70F9BF261E /* BlurHashDecode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5272BC4A60B6AD7553BACA1 /* BlurHashDecode.swift */; };
@@ -1182,6 +1188,7 @@
 		B7F58D6903F9D509EDAB9E4F /* MediaEventsTimelineScreenModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7033218DA395B003F7AB29A2 /* MediaEventsTimelineScreenModels.swift */; };
 		B81840E45D8746A4692DA774 /* Tracing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B574805B9812C111D6215D /* Tracing.swift */; };
 		B818580464CFB5400A3EF6AE /* TimelineModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 029D5701F80A9AF7167BB4D0 /* TimelineModels.swift */; };
+		B82E464F64ED03EFDD29AB60 /* WitlySuggestionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349DDE28100DDAF7CFA99665 /* WitlySuggestionsService.swift */; };
 		B8D9960F77B213FD1B0B0FD3 /* JoinRoomByAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A13364350970987B93F6018 /* JoinRoomByAddressView.swift */; };
 		B93D7CE520088AD53FA6D53C /* SettingsScreenModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B663BE498BB39EADC24025D /* SettingsScreenModels.swift */; };
 		B93FA0DA1504B301CAEE141B /* NotificationSettingsProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F5D66F158A6662F953733E /* NotificationSettingsProxy.swift */; };
@@ -1216,6 +1223,7 @@
 		BED59052E5C5163D2B065CA6 /* EventTimelineItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A81FD0C60175FA081EB19AD /* EventTimelineItem.swift */; };
 		BED5DF7A243101A6D30D8B38 /* landscape_test_video.mov in Resources */ = {isa = PBXBuildFile; fileRef = 59AD88B11514D6725F22AE78 /* landscape_test_video.mov */; };
 		BF523D9E12E3C4AABBA2F6CB /* SpaceHeaderTopicSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D9F2E1FC5A0139571211CE8 /* SpaceHeaderTopicSheetView.swift */; };
+		BFC9F2C9F29AC04F81A40683 /* WitlyRoomTimelineWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01A8A8D088FE23A888C13E3B /* WitlyRoomTimelineWatcher.swift */; };
 		BFEB24336DFD5F196E6F3456 /* IntentionalMentions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DF5CBAF69BDF5DF31C661E1 /* IntentionalMentions.swift */; };
 		C0090506A52A1991BAF4BA68 /* NotificationSettingsChatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07579F9C29001E40715F3014 /* NotificationSettingsChatType.swift */; };
 		C022284E2774A5E1EF683B4D /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04DF593C3F7AF4B2FBAEB05D /* FileManager.swift */; };
@@ -1234,6 +1242,7 @@
 		C14A3E4BC334D2605C49ADE1 /* CreateRoomSpaceSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3141EE5B2CBEC45270E01EB /* CreateRoomSpaceSelectionSheet.swift */; };
 		C16E25C41B858BF27E0C4FC6 /* LinkNewDeviceScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D3DA6959C041E212A718DD3 /* LinkNewDeviceScreenViewModel.swift */; };
 		C1910A16BDF131FECA77BE22 /* EmojiPickerScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEA38B9851CFCC4D67F5587D /* EmojiPickerScreenCoordinator.swift */; };
+		C19796D1878C5CB69F7B636F /* WitlySuggestionsBarContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7EFA6B789F6DE0ABB93C5E /* WitlySuggestionsBarContainer.swift */; };
 		C1A5C386319835FB0C77736B /* ReportContentScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16CD2C62CB7DB78A4238485 /* ReportContentScreenCoordinator.swift */; };
 		C1D0AB8222D7BAFC9AF9C8C0 /* MapLibreMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 622D09D4ECE759189009AEAF /* MapLibreMapView.swift */; };
 		C26DB49C06C00B5DF1A991A5 /* InviteUsersScreenModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1454CF3AABD242F55C8A2615 /* InviteUsersScreenModels.swift */; };
@@ -1433,6 +1442,7 @@
 		E2D57361B835E4D2230960E6 /* ImageRoomTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5599255A6C98EBDA77B76E6 /* ImageRoomTimelineView.swift */; };
 		E2DB696117BAEABAD5718023 /* MediaSourceProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49B9785E3AD7D1C15A29F2F /* MediaSourceProxy.swift */; };
 		E2DDA49BD62F03F180A42E30 /* MapLibreStaticMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 592A35163B0749C66BFD6186 /* MapLibreStaticMapView.swift */; };
+		E2F74AD58BD4670383350D3D /* WitlyOnboardingAccountSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BD77B9E005B9BE35256084 /* WitlyOnboardingAccountSetupScreen.swift */; };
 		E313BDD2B8813144139B2E00 /* UserDiscoveryServiceTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0287793F11C480E242B03DF5 /* UserDiscoveryServiceTest.swift */; };
 		E323A54F317604BDD6968D79 /* UITestsSignalling.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F0192CE2F891141A25B49F /* UITestsSignalling.swift */; };
 		E3291AD16D7A5CB14781819C /* UserNotificationCenterProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45D8149FDDA0315CDC553B4B /* UserNotificationCenterProtocol.swift */; };
@@ -1492,6 +1502,7 @@
 		EA8D941771E762A5D3D7FA0D /* FileMediaEventsTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430C73079A84654BF46A7FF5 /* FileMediaEventsTimelineView.swift */; };
 		EAB3C1F0BC7F671ED8BDF82D /* CompletionSuggestionServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ECF11669EF253E98AA2977A /* CompletionSuggestionServiceProtocol.swift */; };
 		EAC6FE2CD4F50A43068ADCD8 /* Mantis in Frameworks */ = {isa = PBXBuildFile; productRef = 8C30177487BBB5D000E4DDDA /* Mantis */; };
+		EAC874816E4C150E03F629FF /* WitlySuggestionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344DEE5CCAAD1174FE57EF36 /* WitlySuggestionModels.swift */; };
 		EAF2B3E6C6AEC4AD3A8BD454 /* RoomMemberDetailsScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A87D0471D438A233C2CF4A /* RoomMemberDetailsScreenViewModel.swift */; };
 		EB069CC36087F103C517C6A0 /* MapLibreLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51956E593E1AEEE6C6DA7DB9 /* MapLibreLoaderTests.swift */; };
 		EB5B79DD2BCAF8F3B8B01F2F /* LiveLocationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C454F35D8884C0A952FF2F84 /* LiveLocationSheet.swift */; };
@@ -1613,6 +1624,7 @@
 		FCF95603F1D056B1B106A415 /* AdvancedSettingsScreenViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E2B20431F890ED64255CA1 /* AdvancedSettingsScreenViewModelProtocol.swift */; };
 		FD19654C18E7C6D8AC79408D /* libMatrixRustSDKMocks.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 73F3153AB9D628110878E24F /* libMatrixRustSDKMocks.a */; };
 		FD29471C72872F8B7580E3E1 /* KeychainControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39C0D861FC397AC34BCF089E /* KeychainControllerMock.swift */; };
+		FD36EE1069945ACAEEA28D21 /* AGENTS.md in Resources */ = {isa = PBXBuildFile; fileRef = 24AE0E5E56178AED32C7C2A7 /* AGENTS.md */; };
 		FD387E0B8962056D2092DF3F /* TimelineSelectionToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C3B926E1BBC7569AC6C682 /* TimelineSelectionToolbar.swift */; };
 		FD573B5D665824EB79EABF06 /* Observable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5327E3B3C58BEB0E65F4CF98 /* Observable.swift */; };
 		FD9777315A5D9CDC47458AD1 /* MediaEventsTimelineScreenViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A175D0FDEDBFA44C47FE13AE /* MediaEventsTimelineScreenViewModelProtocol.swift */; };
@@ -1768,6 +1780,7 @@
 		00E5B2CBEF8F96424F095508 /* RoomDetailsEditScreenViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomDetailsEditScreenViewModelTests.swift; sourceTree = "<group>"; };
 		011AFA4990C585D157829679 /* DeclineAndBlockScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeclineAndBlockScreenViewModel.swift; sourceTree = "<group>"; };
 		012A284622B32052015F1F89 /* ReadMarkerRoomTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadMarkerRoomTimelineView.swift; sourceTree = "<group>"; };
+		01A8A8D088FE23A888C13E3B /* WitlyRoomTimelineWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlyRoomTimelineWatcher.swift; sourceTree = "<group>"; };
 		01B795AAAB7B8747FE2FF311 /* LogViewerScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewerScreenModels.swift; sourceTree = "<group>"; };
 		01C4C7DB37597D7D8379511A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		022E6BD64CB4610B9C95FC02 /* UserDetailsEditScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDetailsEditScreenViewModel.swift; sourceTree = "<group>"; };
@@ -1817,6 +1830,7 @@
 		0825EAFD47332DD459DE893F /* SessionDirectoriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDirectoriesTests.swift; sourceTree = "<group>"; };
 		08283301736A6FE9D558B2CB /* AppLockScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockScreenViewModelProtocol.swift; sourceTree = "<group>"; };
 		0833F51229E166BCA141D004 /* RoomRolesAndPermissionsFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomRolesAndPermissionsFlowCoordinator.swift; sourceTree = "<group>"; };
+		087043816BCFAF877B01CAC6 /* WitlyRoomSuggestionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlyRoomSuggestionsViewModel.swift; sourceTree = "<group>"; };
 		094F6B21835890B470DF540C /* SpaceScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceScreenCoordinator.swift; sourceTree = "<group>"; };
 		099F2D36C141D845A445B1E6 /* EmojiProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiProviderTests.swift; sourceTree = "<group>"; };
 		0A2074C0449B83D5858BD2D7 /* FrequentlyUsedEmoji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrequentlyUsedEmoji.swift; sourceTree = "<group>"; };
@@ -1869,6 +1883,7 @@
 		105B2A8426404EF66F00CFDB /* RoomTimelineItemFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomTimelineItemFactory.swift; sourceTree = "<group>"; };
 		10CC626F97AD70FF0420C115 /* RoomSummaryProviderProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomSummaryProviderProtocol.swift; sourceTree = "<group>"; };
 		10D751743B20B314D84D79FE /* TrackedUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackedUserDefaults.swift; sourceTree = "<group>"; };
+		10E99676938297E7FBC58AB6 /* WitlySuggestionsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlySuggestionsBarView.swift; sourceTree = "<group>"; };
 		10F130DF775CE6BC51A4E392 /* AppLockSetupBiometricsScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockSetupBiometricsScreenModels.swift; sourceTree = "<group>"; };
 		10F32E0B4B83D2A11EE8D011 /* InviteUsersScreenSelectedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteUsersScreenSelectedItem.swift; sourceTree = "<group>"; };
 		11151E78D6BB2B04A8FBD389 /* EmojiPickerScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiPickerScreenViewModelProtocol.swift; sourceTree = "<group>"; };
@@ -2000,6 +2015,7 @@
 		2429224EB0EEA34D35CE9249 /* UserIndicatorControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserIndicatorControllerTests.swift; sourceTree = "<group>"; };
 		2441E2424E78A40FC95DBA76 /* AudioRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderTests.swift; sourceTree = "<group>"; };
 		248649EBA5BC33DB93698734 /* SessionVerificationControllerProxyMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionVerificationControllerProxyMock.swift; sourceTree = "<group>"; };
+		24AE0E5E56178AED32C7C2A7 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		24E637CF570711FB5FD63DEA /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		24EC819497BB5F8C4998D760 /* RoomListFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomListFilterView.swift; sourceTree = "<group>"; };
 		24F5530B2212862FA4BEFF2D /* HomeScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenViewModelProtocol.swift; sourceTree = "<group>"; };
@@ -2092,8 +2108,10 @@
 		33E49C5C6F802B4D94CA78D1 /* ro */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ro; path = ro.lproj/Localizable.strings; sourceTree = "<group>"; };
 		3423C39324CF851A72EC9976 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/SAS.strings; sourceTree = "<group>"; };
 		342BEBC3C5FC3F9943C41C4C /* TemplateScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateScreenViewModelProtocol.swift; sourceTree = "<group>"; };
+		344DEE5CCAAD1174FE57EF36 /* WitlySuggestionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlySuggestionModels.swift; sourceTree = "<group>"; };
 		345172AD4377E83A44BD864F /* MessageComposerTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageComposerTextField.swift; sourceTree = "<group>"; };
 		347D708104CCEF771428C9A3 /* PollFormScreenViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollFormScreenViewModelTests.swift; sourceTree = "<group>"; };
+		349DDE28100DDAF7CFA99665 /* WitlySuggestionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlySuggestionsService.swift; sourceTree = "<group>"; };
 		34E0FA38BD473FFA6F1AB7A5 /* be */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = be; path = be.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		34ED3AB7E0287552A5648AB3 /* be */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = be; path = be.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		353024006CB726E9F9187B3A /* AnalyticsConsentState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsConsentState.swift; sourceTree = "<group>"; };
@@ -2218,6 +2236,7 @@
 		47F29139BC2A804CE5E0757E /* MediaUploadPreviewScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaUploadPreviewScreenViewModel.swift; sourceTree = "<group>"; };
 		47F441A78A5CAA9E2937E463 /* KnockRequestsBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnockRequestsBannerView.swift; sourceTree = "<group>"; };
 		4853C923A1AF43711D025EAF /* TextRoomTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRoomTimelineView.swift; sourceTree = "<group>"; };
+		4885C18EB50E3A2CB9B1057E /* WitlySyncingBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlySyncingBanner.swift; sourceTree = "<group>"; };
 		48A5C34C4E4268EF65D171EF /* RoomChangeRolesScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomChangeRolesScreenModels.swift; sourceTree = "<group>"; };
 		48CE6BF18E542B32FA52CE06 /* fa */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = fa; path = fa.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		48FEFF746DB341CDB18D7AAA /* RoomRolesAndPermissionsScreenViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomRolesAndPermissionsScreenViewModelTests.swift; sourceTree = "<group>"; };
@@ -2260,6 +2279,7 @@
 		502F986D57158674172C58E3 /* AppLockSetupSettingsScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockSetupSettingsScreenModels.swift; sourceTree = "<group>"; };
 		505208F28007C0FEC14E1FF0 /* HomeScreenViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenViewModelTests.swift; sourceTree = "<group>"; };
 		505ADA084C0B38A0C4AD2574 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		505DED57BD5592F2F071D82B /* WitlyAIStreamClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlyAIStreamClient.swift; sourceTree = "<group>"; };
 		5098DA7799946A61E34A2373 /* FileRoomTimelineItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileRoomTimelineItem.swift; sourceTree = "<group>"; };
 		50E31AB0E77BB70E2BC77463 /* MatrixUserShareLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixUserShareLink.swift; sourceTree = "<group>"; };
 		510DA63AB273A68D659CEC95 /* ToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarButton.swift; sourceTree = "<group>"; };
@@ -2522,6 +2542,7 @@
 		7DC017C3CB6B0F7C63F460F2 /* SecureBackupLogoutConfirmationScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureBackupLogoutConfirmationScreenViewModel.swift; sourceTree = "<group>"; };
 		7DDBF99755A9008CF8C8499E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7DDF49CEBC0DFC59C308335F /* RoomMemberDetailsScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomMemberDetailsScreenViewModelProtocol.swift; sourceTree = "<group>"; };
+		7E7EFA6B789F6DE0ABB93C5E /* WitlySuggestionsBarContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlySuggestionsBarContainer.swift; sourceTree = "<group>"; };
 		7E8562F4D7DE073BC32902AB /* EncryptionResetScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionResetScreenViewModelProtocol.swift; sourceTree = "<group>"; };
 		7EA2AFF6EB59FE25234D29F3 /* ElementCallServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementCallServiceTests.swift; sourceTree = "<group>"; };
 		7EB58E4E8D6D634C246AD5C2 /* RoomInviterLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomInviterLabel.swift; sourceTree = "<group>"; };
@@ -2660,6 +2681,7 @@
 		94028A227645FA880B966211 /* WaveformSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformSource.swift; sourceTree = "<group>"; };
 		9475FD81B13D50103E5290EB /* SpaceSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceSettingsScreen.swift; sourceTree = "<group>"; };
 		94A561C542596126DAE211AD /* preview_avatar_user.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = preview_avatar_user.jpg; sourceTree = "<group>"; };
+		94BD77B9E005B9BE35256084 /* WitlyOnboardingAccountSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlyOnboardingAccountSetupScreen.swift; sourceTree = "<group>"; };
 		94D670124FC3E84F23A62CCF /* APNSPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APNSPayload.swift; sourceTree = "<group>"; };
 		94EE2C5F0A06F146BBE3A1B1 /* LinkNewDeviceFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkNewDeviceFlowCoordinator.swift; sourceTree = "<group>"; };
 		9501D11B4258DFA33BA3B40F /* ServerSelectionScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerSelectionScreenModels.swift; sourceTree = "<group>"; };
@@ -2989,6 +3011,7 @@
 		CA28F29C9F93E93CC3C2C715 /* NavigationRootCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRootCoordinator.swift; sourceTree = "<group>"; };
 		CA29952595B804DA221A0C1D /* ComposerToolbarViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerToolbarViewModelTests.swift; sourceTree = "<group>"; };
 		CA46BDF38F87118939BDF659 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		CA4E34A7425405726157FE1F /* WitlyIndeterminateBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlyIndeterminateBar.swift; sourceTree = "<group>"; };
 		CA4F6D7000EDCD187E0989E7 /* PinnedEventsTimelineScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedEventsTimelineScreen.swift; sourceTree = "<group>"; };
 		CA89A2DD51B6BBE1DA55E263 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		CA90BD288E5AE6BC643AFDDF /* TemplateScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateScreenCoordinator.swift; sourceTree = "<group>"; };
@@ -3212,6 +3235,7 @@
 		EEE0273EC14A781BBF715E37 /* GalleryGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryGridView.swift; sourceTree = "<group>"; };
 		EF13BFD415CA84B1272E94F8 /* PINTextFieldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PINTextFieldTests.swift; sourceTree = "<group>"; };
 		EF1593DD87F974F8509BB619 /* ElementAnimations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementAnimations.swift; sourceTree = "<group>"; };
+		EF1FC98D6EAD330754FB1240 /* WitlyOnboardingAccountSetupCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitlyOnboardingAccountSetupCoordinator.swift; sourceTree = "<group>"; };
 		EF36FC3DE25B20B7FA91F1FD /* SpaceServiceProxyMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceServiceProxyMock.swift; sourceTree = "<group>"; };
 		EF98A02DED04075F7CF0C721 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		EFD1CFB730C7417925264F17 /* CreateRoomScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRoomScreen.swift; sourceTree = "<group>"; };
@@ -3605,6 +3629,15 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		093CEDF03B4BA4C292E06B82 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				7E7EFA6B789F6DE0ABB93C5E /* WitlySuggestionsBarContainer.swift */,
+				10E99676938297E7FBC58AB6 /* WitlySuggestionsBarView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		09C599CB430ABF160C1EE55C /* AnalyticsSettingsScreen */ = {
 			isa = PBXGroup;
 			children = (
@@ -3615,6 +3648,14 @@
 				AAFE4295DD635085A44CBF4C /* View */,
 			);
 			path = AnalyticsSettingsScreen;
+			sourceTree = "<group>";
+		};
+		0B38D8E1B520262EAE71B653 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				94BD77B9E005B9BE35256084 /* WitlyOnboardingAccountSetupScreen.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		0B7746360C4753B5A014838F /* SupportingFiles */ = {
@@ -4293,11 +4334,14 @@
 		36A73FFA7D6FD0C6BB8D580F /* Witly */ = {
 			isa = PBXGroup;
 			children = (
+				24AE0E5E56178AED32C7C2A7 /* AGENTS.md */,
 				56E6BC7792C158BFC753EDC3 /* Brand */,
+				F43CFC9AD1FF9C95816A84EB /* Common */,
 				06A0B61ED7E8A810BDEB6536 /* Config */,
 				4F075352B0CE9BD3CCF9A10E /* Element */,
 				726E394CD2E4CFFF34B74C51 /* Onboarding */,
 				5CDBE5447148F49424CF40B2 /* Services */,
+				BBBDFFCE5B59E0623CE929BA /* Suggestions */,
 			);
 			path = Witly;
 			sourceTree = "<group>";
@@ -5019,6 +5063,7 @@
 				F7B650977D00DD77941D8895 /* AGChatAPIClient.swift */,
 				E90170A10BCE83F458B8AE79 /* SupabaseAuthService.swift */,
 				E2D2DAC9E535FCF6ECF113FE /* SupabaseOAuthPresenter.swift */,
+				505DED57BD5592F2F071D82B /* WitlyAIStreamClient.swift */,
 				218AAF7FAD89CC0686ADB824 /* WitlyBridgeConnectController.swift */,
 				6A97753D551C9F947B4F1A23 /* WitlyLog.swift */,
 				D89894A8BAFF525A480E5E2C /* WitlyProvisioning.swift */,
@@ -5307,6 +5352,7 @@
 			isa = PBXGroup;
 			children = (
 				BB816D9211DB9971E3F51ADC /* WitlyOnboardingFlowCoordinator.swift */,
+				88DACA5D4DBA4A79ED83BECA /* AccountSetup */,
 				D352EFACAE6FF9104AC5FD4E /* Auth */,
 				649CE3EDAA5376676EC2ADF9 /* Connect */,
 				C5440EFBA95CD833C5FCE09C /* Intro */,
@@ -5872,6 +5918,15 @@
 				A232D9156D225BD9FD1D0C43 /* PhotoLibraryPicker.swift */,
 			);
 			path = MediaPickerScreen;
+			sourceTree = "<group>";
+		};
+		88DACA5D4DBA4A79ED83BECA /* AccountSetup */ = {
+			isa = PBXGroup;
+			children = (
+				EF1FC98D6EAD330754FB1240 /* WitlyOnboardingAccountSetupCoordinator.swift */,
+				0B38D8E1B520262EAE71B653 /* View */,
+			);
+			path = AccountSetup;
 			sourceTree = "<group>";
 		};
 		89CDB9E3473D672F1E65BFAC /* Presence */ = {
@@ -6633,6 +6688,18 @@
 				72C4A2D279386A811BDC6DAE /* LinkNewDeviceScreen.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		BBBDFFCE5B59E0623CE929BA /* Suggestions */ = {
+			isa = PBXGroup;
+			children = (
+				087043816BCFAF877B01CAC6 /* WitlyRoomSuggestionsViewModel.swift */,
+				01A8A8D088FE23A888C13E3B /* WitlyRoomTimelineWatcher.swift */,
+				344DEE5CCAAD1174FE57EF36 /* WitlySuggestionModels.swift */,
+				349DDE28100DDAF7CFA99665 /* WitlySuggestionsService.swift */,
+				093CEDF03B4BA4C292E06B82 /* View */,
+			);
+			path = Suggestions;
 			sourceTree = "<group>";
 		};
 		BC8F2F197AFDABE63B2E2CA7 /* View */ = {
@@ -7453,6 +7520,15 @@
 			path = View;
 			sourceTree = "<group>";
 		};
+		F43CFC9AD1FF9C95816A84EB /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				CA4E34A7425405726157FE1F /* WitlyIndeterminateBar.swift */,
+				4885C18EB50E3A2CB9B1057E /* WitlySyncingBanner.swift */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
 		F49710373735A3B8BB76DFF7 /* View */ = {
 			isa = PBXGroup;
 			children = (
@@ -8085,6 +8161,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FD36EE1069945ACAEEA28D21 /* AGENTS.md in Resources */,
 				6CBC544A7CC4DDDBDED4D0A6 /* AppIcon.icon in Resources */,
 				992F5E750F5030C4BA2D0D03 /* Assets.xcassets in Resources */,
 				2CA6ABBC9A88EB89EA52FCCB /* ConfettiScene.scn in Resources */,
@@ -9809,13 +9886,17 @@
 				B773ACD8881DB18E876D950C /* WaveformSource.swift in Sources */,
 				08CB4BD12CEEDE6AAE4A18DD /* WindowManager.swift in Sources */,
 				AE5AAD9E32511544FDFA5560 /* WindowManagerProtocol.swift in Sources */,
+				B6143A6CF1F626485676F4F5 /* WitlyAIStreamClient.swift in Sources */,
 				6C9B61A4A015A87803AF3B65 /* WitlyAppHooks.swift in Sources */,
 				966F384A27D51E1F34FEA55C /* WitlyBridgeConnectController.swift in Sources */,
 				F8E8D14FCFF152D58CFA269E /* WitlyColorScheme.swift in Sources */,
 				5BAA541074B548BFD1243C05 /* WitlyCompoundHook.swift in Sources */,
 				03ED33F8FCFE3639BD54A0BC /* WitlyConfig.swift in Sources */,
 				473E81F0F1CE82BF22F10E91 /* WitlyCryptoIdentityStore.swift in Sources */,
+				58F6D1B7DED284D853869DD4 /* WitlyIndeterminateBar.swift in Sources */,
 				41DE8DA3BD7FA6A865EF2606 /* WitlyLog.swift in Sources */,
+				6D341FAA7CD03C5F795A286F /* WitlyOnboardingAccountSetupCoordinator.swift in Sources */,
+				E2F74AD58BD4670383350D3D /* WitlyOnboardingAccountSetupScreen.swift in Sources */,
 				CFECCF6FB93407FF54424DBC /* WitlyOnboardingAuthCoordinator.swift in Sources */,
 				1BFB4625107D46190987D84C /* WitlyOnboardingAuthModels.swift in Sources */,
 				72BE92E2C008DE4259455EFB /* WitlyOnboardingAuthScreen.swift in Sources */,
@@ -9831,8 +9912,15 @@
 				06274689C5F73645982CDD7A /* WitlyOnboardingIntroScreen.swift in Sources */,
 				11D2A97EF5DA439C54909648 /* WitlyPhoneNumberField.swift in Sources */,
 				7376581CD5F28D68C9EE43E0 /* WitlyProvisioning.swift in Sources */,
+				62051CD89B83FB611ECA3487 /* WitlyRoomSuggestionsViewModel.swift in Sources */,
+				BFC9F2C9F29AC04F81A40683 /* WitlyRoomTimelineWatcher.swift in Sources */,
 				D2C0EDF867234708B9CA82C9 /* WitlySession.swift in Sources */,
 				78863EA3B5B449A1D06DA0B2 /* WitlySessionRestorer.swift in Sources */,
+				EAC874816E4C150E03F629FF /* WitlySuggestionModels.swift in Sources */,
+				C19796D1878C5CB69F7B636F /* WitlySuggestionsBarContainer.swift in Sources */,
+				2A4C03CCAB0429292CF974FD /* WitlySuggestionsBarView.swift in Sources */,
+				B82E464F64ED03EFDD29AB60 /* WitlySuggestionsService.swift in Sources */,
+				A30A55105908F513230D38E2 /* WitlySyncingBanner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
