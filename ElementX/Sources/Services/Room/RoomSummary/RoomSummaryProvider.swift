@@ -80,7 +80,8 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
         let (diffsStream, diffsContinuation) = AsyncStream<[RoomListEntriesUpdate]>.makeStream()
         self.diffsContinuation = diffsContinuation
         
-        let (loadingStateStream, loadingStateContinuation) = AsyncStream<RoomListLoadingState>.makeStream()
+        let (loadingStateStream, loadingStateContinuation) = AsyncStream<RoomListLoadingState>
+            .makeStream()
         self.loadingStateContinuation = loadingStateContinuation
         
         Task { [weak self] in
@@ -146,19 +147,24 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
         
         currentFilter = filter
         
-        let baseFilter: [RoomListEntriesDynamicFilterKind] = [.any(filters: [.all(filters: [.nonSpace, .nonLeft]),
-                                                                             .all(filters: [.space, .invite])]),
-                                                              .deduplicateVersions]
+        let baseFilter: [RoomListEntriesDynamicFilterKind] = [
+            .any(filters: [
+                .all(filters: [.nonSpace, .nonLeft]),
+                .all(filters: [.space, .invite])
+            ]),
+            .deduplicateVersions
+        ]
         
         switch filter {
         case .excludeAll:
             _ = listUpdatesSubscriptionResult?.controller().setFilter(kind: .none)
-        case let .search(query):
-            let filters = if appSettings.fuzzyRoomListSearchEnabled {
-                [.fuzzyMatchRoomName(pattern: query)] + baseFilter
-            } else {
-                [.normalizedMatchRoomName(pattern: query)] + baseFilter
-            }
+        case .search(let query):
+            let filters =
+                if appSettings.fuzzyRoomListSearchEnabled {
+                    [.fuzzyMatchRoomName(pattern: query)] + baseFilter
+                } else {
+                    [.normalizedMatchRoomName(pattern: query)] + baseFilter
+                }
             _ = listUpdatesSubscriptionResult?.controller().setFilter(kind: .all(filters: filters))
         case .rooms(let roomIDs, let filters):
             var rustFilters = filters.map(\.rustFilter) + baseFilter
@@ -170,7 +176,7 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
             }
             
             _ = listUpdatesSubscriptionResult?.controller().setFilter(kind: .all(filters: rustFilters))
-        case let .all(filters):
+        case .all(let filters):
             var rustFilters = filters.map(\.rustFilter) + baseFilter
             
             if !filters.contains(.lowPriority), appSettings.lowPriorityFilterEnabled {
@@ -190,7 +196,8 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
                 guard let self,
                       !range.isEmpty,
                       range.upperBound >= rooms.count - Int(roomListPageSize) / 2,
-                      rooms.count != roomCountOnLastPageAddRequest else {
+                      rooms.count != roomCountOnLastPageAddRequest
+                else {
                     return
                 }
                 
@@ -229,16 +236,18 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
                 // The scroll view content size based visible range calculations might create large ranges
                 // This is just a safety check to not overload the backend
                 var range = range
-                if range.upperBound - range.lowerBound > SlidingSyncConstants.maximumVisibleRangeSize {
+                if range.upperBound - range.lowerBound
+                    > SlidingSyncConstants.maximumVisibleRangeSize {
                     let upperBound = range.lowerBound + SlidingSyncConstants.maximumVisibleRangeSize
                     range = range.lowerBound..<upperBound
                 }
                 
                 MXLog.info("\(self.name): Subscribing to rooms in range: \(range)")
                 
-                return range
-                    .filter { $0 < self.rooms.count }
-                    .map { self.rooms[$0].id }
+                return
+                    range
+                        .filter { $0 < self.rooms.count }
+                        .map { self.rooms[$0].id }
             }
             .removeDuplicates()
             .sink { [weak self] roomIDs in
@@ -274,8 +283,11 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
         return updatedRooms
     }
     
-    private nonisolated static func processDiff(_ diff: RoomListEntriesUpdate, on currentItems: [RoomSummary], eventStringBuilder: RoomEventStringBuilder, name: String) async -> [RoomSummary] {
-        guard let collectionDiff = await buildDiff(from: diff, on: currentItems, eventStringBuilder: eventStringBuilder) else {
+    private nonisolated static func processDiff(_ diff: RoomListEntriesUpdate, on currentItems: [RoomSummary],
+                                                eventStringBuilder: RoomEventStringBuilder, name: String) async -> [RoomSummary] {
+        guard
+            let collectionDiff = await buildDiff(from: diff, on: currentItems, eventStringBuilder: eventStringBuilder)
+        else {
             MXLog.error("\(name): Failed building CollectionDifference from \(diff)")
             return currentItems
         }
@@ -339,7 +351,8 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
                 if let senderID {
                     let sender = TimelineItemSender(senderID: senderID, senderProfile: profile)
                     let senderDisplayName = sender.displayName ?? sender.id
-                    let invitedYouString = eventStringBuilder.stateEventStringBuilder.buildInvitedYouString(senderDisplayName)
+                    let invitedYouString = eventStringBuilder.stateEventStringBuilder
+                        .buildInvitedYouString(senderDisplayName)
                     attributedLastMessage = AttributedString(invitedYouString)
                 }
             case .none:
@@ -352,22 +365,26 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
             inviterProxy = RoomMemberProxy(member: inviter)
         }
         
-        let notificationMode = roomInfo.cachedUserDefinedNotificationMode.flatMap { RoomNotificationModeProxy.from(roomNotificationMode: $0) }
-        
-        let joinRequestType: RoomSummary.JoinRequestType? = switch roomInfo.membership {
-        case .invited: .invite(inviter: inviterProxy)
-        case .knocked: .knock
-        default: nil
+        let notificationMode = roomInfo.cachedUserDefinedNotificationMode.flatMap {
+            RoomNotificationModeProxy.from(roomNotificationMode: $0)
         }
         
-        let activeCallIntent: RtcCallIntent? = switch roomInfo.activeRoomCallConsensusIntent {
-        case .full(let intent):
-            intent
-        case .partial(intent: let intent, _, _):
-            intent
-        case .none:
-            nil
-        }
+        let joinRequestType: RoomSummary.JoinRequestType? =
+            switch roomInfo.membership {
+            case .invited: .invite(inviter: inviterProxy)
+            case .knocked: .knock
+            default: nil
+            }
+        
+        let activeCallIntent: RtcCallIntent? =
+            switch roomInfo.activeRoomCallConsensusIntent {
+            case .full(let intent):
+                intent
+            case .partial(let intent, _, _):
+                intent
+            case .none:
+                nil
+            }
         
         return RoomSummary(room: room,
                            id: roomInfo.id,
@@ -394,7 +411,8 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
                            isTombstoned: roomInfo.successorRoom != nil)
     }
     
-    private nonisolated static func buildDiff(from diff: RoomListEntriesUpdate, on rooms: [RoomSummary], eventStringBuilder: RoomEventStringBuilder) async -> CollectionDifference<RoomSummary>? {
+    private nonisolated static func buildDiff(from diff: RoomListEntriesUpdate, on rooms: [RoomSummary],
+                                              eventStringBuilder: RoomEventStringBuilder) async -> CollectionDifference<RoomSummary>? {
         var changes = [CollectionDifference<RoomSummary>.Change]()
         
         switch diff {
@@ -426,6 +444,13 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
             let summary = await buildRoomSummary(from: value, eventStringBuilder: eventStringBuilder)
             changes.append(.insert(offset: 0, element: summary, associatedWith: nil))
         case .remove(let index):
+            // WITLY SEAM: guard against an out-of-bounds index (observed crash) instead of
+            // trapping — a burst of rapid room-list diffs (e.g. right after connecting a bridge)
+            // can desync the SDK's reported index from this local snapshot.
+            guard rooms.indices.contains(Int(index)) else {
+                MXLog.error("Ignoring remove diff for out-of-bounds index \(index) (rooms.count=\(rooms.count))")
+                break
+            }
             let summary = rooms[Int(index)]
             changes.append(.remove(offset: Int(index), element: summary, associatedWith: nil))
         case .reset(let values):
@@ -434,7 +459,9 @@ class RoomSummaryProvider: RoomSummaryProviderProtocol {
             }
             
             for (index, value) in values.enumerated() {
-                await changes.append(.insert(offset: index, element: buildRoomSummary(from: value, eventStringBuilder: eventStringBuilder), associatedWith: nil))
+                await changes.append(.insert(offset: index,
+                                             element: buildRoomSummary(from: value, eventStringBuilder: eventStringBuilder),
+                                             associatedWith: nil))
             }
         case .set(let index, let value):
             let summary = await buildRoomSummary(from: value, eventStringBuilder: eventStringBuilder)
