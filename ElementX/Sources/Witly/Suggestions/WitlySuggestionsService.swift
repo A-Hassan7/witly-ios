@@ -17,7 +17,7 @@ import Foundation
 /// storage yet (`docs/witly/parity-ledger.md` §2/§4). Swap the feature/variables here, not the
 /// call sites, if/when Wit-mix support lands on iOS.
 nonisolated struct WitlySuggestionsService: Sendable {
-    private static let feature = "suggestions/mix"
+    private static let feature = "suggestions/me_wittier"
     
     private let apiClient: AGChatAPIClient
     private let streamClient: WitlyAIStreamClient
@@ -30,9 +30,23 @@ nonisolated struct WitlySuggestionsService: Sendable {
     /// Enqueues one generation round for `context` and returns its live SSE event stream.
     /// Throws only on a genuine request failure (auth, network, validation, credits) — a stream that
     /// opens successfully never throws for a backend-reported failure (see `.serverError`).
-    func generate(context: [WitlyContextMessage], roomID: String) async throws -> AsyncThrowingStream<WitlyAIStreamEvent, Error> {
-        let variables: [String: Any] = ["messages": context.map(\.jsonObject)]
-        let response = try await apiClient.postSuggestions(feature: Self.feature, variables: variables, roomId: roomID)
+    ///
+    /// - Parameters:
+    ///   - customIntent: Free-form "what I want to say" text from the Witly panel's Suggestions tab,
+    ///     sent as `draft_text` — the prompt already treats that variable as "additional evidence of
+    ///     what I intend to say" (see `backend/app/ai/seed.py`'s `_ME_WITTIER_USER`), so a typed
+    ///     intent and an in-progress composer draft are handled identically server-side.
+    ///   - styleControls: `{control_id: option_id}` (e.g. `["boldness": "high"]`) for the room's
+    ///     effective response-style selections (global default + per-room override already merged
+    ///     by the caller). Omitted entirely when empty so the backend's own defaults apply.
+    func generate(context: [WitlyContextMessage], roomID: String, customIntent: String? = nil,
+                  styleControls: [String: String] = [:]) async throws -> AsyncThrowingStream<WitlyAIStreamEvent, Error> {
+        var variables: [String: Any] = ["messages": context.map(\.jsonObject)]
+        if let customIntent, !customIntent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            variables["draft_text"] = customIntent
+        }
+        let response = try await apiClient.postSuggestions(feature: Self.feature, variables: variables, roomId: roomID,
+                                                           styleControls: styleControls.isEmpty ? nil : styleControls)
         return streamClient.stream(streamKey: response.streamKey)
     }
 }

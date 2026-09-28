@@ -397,7 +397,8 @@ struct RoomScreen_Previews: PreviewProvider, TestablePreview {
     static let composerViewModel = ComposerToolbarViewModel.mock()
     static let witlySuggestionsViewModel = WitlyRoomSuggestionsViewModel(roomID: "stable_id",
                                                                          timelineController: TimelineControllerMock(.init()),
-                                                                         apiClient: AGChatAPIClient(session: WitlySession()))
+                                                                         apiClient: AGChatAPIClient(session: WitlySession()),
+                                                                         styleControlsStore: WitlyStyleControlsStore(clientProxy: ClientProxyMock(.init())))
     
     static var previews: some View {
         ElementNavigationStack {

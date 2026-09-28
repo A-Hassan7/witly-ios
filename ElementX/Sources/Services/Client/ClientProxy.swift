@@ -729,6 +729,25 @@ class ClientProxy: ClientProxyProtocol {
         }
     }
     
+    func witlyAccountDataEvent(eventType: String) async -> Result<String?, ClientProxyError> {
+        do {
+            return try await .success(client.accountData(eventType: eventType))
+        } catch {
+            MXLog.error("Failed reading account data \(eventType) with error: \(error)")
+            return .failure(.sdkError(error))
+        }
+    }
+    
+    func setWitlyAccountDataEvent(eventType: String, content: String) async -> Result<Void, ClientProxyError> {
+        do {
+            try await client.setAccountData(eventType: eventType, content: content)
+            return .success(())
+        } catch {
+            MXLog.error("Failed setting account data \(eventType) with error: \(error)")
+            return .failure(.sdkError(error))
+        }
+    }
+    
     func setUserAvatar(media: MediaInfo) async -> Result<Void, ClientProxyError> {
         guard case let .image(imageURL, _, _) = media, let mimeType = media.mimeType else {
             MXLog.error("Failed uploading, invalid media: \(media)")

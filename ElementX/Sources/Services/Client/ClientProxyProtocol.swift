@@ -299,4 +299,14 @@ protocol ClientProxyProtocol: AnyObject {
     /// Configures the client-owned presence used by future sync requests and shared with clones and notification children.
     /// When `sendImmediately` is `true` this also asks the SDK to send a direct presence update.
     func configurePresence(_ presence: ClientProxyPresence, sendImmediately: Bool) async -> Result<Void, ClientProxyError>
+    
+    // MARK: - Witly account data
+    
+    // WITLY SEAM: thin passthrough to the Rust SDK's global account data API (no room-scoped
+    // equivalent needed — Witly stores per-room overrides as a map inside one global event, see
+    // `WitlyStyleControlsStore`). Lets Witly settings (e.g. response-style controls) sync across
+    // devices via the user's own homeserver without a new core edit anywhere else.
+    func witlyAccountDataEvent(eventType: String) async -> Result<String?, ClientProxyError>
+    
+    func setWitlyAccountDataEvent(eventType: String, content: String) async -> Result<Void, ClientProxyError>
 }

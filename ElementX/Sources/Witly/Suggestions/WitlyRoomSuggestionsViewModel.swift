@@ -22,24 +22,30 @@ import Foundation
 @MainActor
 final class WitlyRoomSuggestionsViewModel: ObservableObject {
     @Published private(set) var state: WitlyRoomSuggestionsState = .idle
+    /// Drives the Witly bottom sheet's presentation — see `WitlySuggestionsBarContainer`.
+    @Published var isPanelPresented = false
+    /// The response-style controls (Boldness/Flirt/…) the active "Me + Wittier" prompt supports,
+    /// fetched from `GET /ai/catalog` metadata — entirely backend-owned, never hardcoded here.
+    @Published private(set) var styleControls: [WitlyStyleControl] = []
     
-    private let roomID: String
+    let roomID: String
+    let styleControlsStore: WitlyStyleControlsStore
     private let watcher: WitlyRoomTimelineWatcher
     private let service: WitlySuggestionsService
+    private let apiClient: AGChatAPIClient
     private var generationTask: Task<Void, Never>?
+    private var styleControlsLoadTask: Task<Void, Never>?
     
     /// Inserts `text` into the room's composer as an editable draft (never sends). Wired by
     /// `RoomScreenCoordinator` to its existing `shareText(_:)` (replace-draft + focus) — see
     /// `PATCHES.md` for why this reuses that method rather than adding a new composer core seam.
     var onInsertSuggestion: ((String) -> Void)?
-    /// The ✨ button's action: opens the deeper Witly surface. No panel exists yet in this task's
-    /// scope, so `RoomScreenCoordinator` wires this to a lightweight "coming soon" indicator — a
-    /// clean, stable integration point to swap for `presentWitlyPanel` later (see
-    /// `docs/witly/parity-ledger.md` §8's iOS seam notes).
-    var onOpenWitly: (() -> Void)?
     
-    init(roomID: String, timelineController: TimelineControllerProtocol, apiClient: AGChatAPIClient) {
+    init(roomID: String, timelineController: TimelineControllerProtocol, apiClient: AGChatAPIClient,
+         styleControlsStore: WitlyStyleControlsStore) {
         self.roomID = roomID
+        self.apiClient = apiClient
+        self.styleControlsStore = styleControlsStore
         WitlyLog.info("suggestions: watching room \(roomID)")
         watcher = WitlyRoomTimelineWatcher(timelineController: timelineController)
         service = WitlySuggestionsService(apiClient: apiClient)
@@ -56,6 +62,7 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
     func stop() {
         generationTask?.cancel()
         generationTask = nil
+        styleControlsLoadTask?.cancel()
         watcher.stop()
     }
     
@@ -66,34 +73,22 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
         generate()
     }
     
-    func insertSuggestion(_ suggestion: WitlySuggestion) {
-        WitlyLog.info("suggestions: inserted suggestion #\(suggestion.id) into composer")
-        onInsertSuggestion?(suggestion.text)
-    }
-    
-    func openWitly() {
-        WitlyLog.verbose("suggestions: ✨ button tapped")
-        onOpenWitly?()
-    }
-    
-    // MARK: - Private
-    
-    private func invalidateForNewMessage() {
-        generationTask?.cancel()
-        generationTask = nil
-        state = .idle
-    }
-    
-    private func generate() {
+    /// Witly panel Suggestions tab: generate using conversation context plus a free-form description
+    /// of what the user wants to say (sent as `draft_text` — see `WitlySuggestionsService.generate`).
+    /// Also the entry point for the Smart-timing auto-trigger and manual regenerate (both omit
+    /// `customIntent`).
+    func generate(customIntent: String? = nil) {
         generationTask?.cancel()
         state = WitlyRoomSuggestionsState(phase: .generating, suggestions: [])
         
         let context = watcher.recentContext()
+        let effectiveStyleControls = styleControlsStore.effectiveValues(forRoom: roomID)
         WitlyLog.info("suggestions: generating for room \(roomID) (context: \(context.count) messages)")
         generationTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let stream = try await service.generate(context: context, roomID: roomID)
+                let stream = try await service.generate(context: context, roomID: roomID, customIntent: customIntent,
+                                                        styleControls: effectiveStyleControls)
                 var received: [WitlySuggestion] = []
                 for try await event in stream {
                     guard !Task.isCancelled else { return }
@@ -124,6 +119,72 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
                 state = WitlyRoomSuggestionsState(phase: .error(message: message), suggestions: [])
             }
         }
+    }
+    
+    func insertSuggestion(_ suggestion: WitlySuggestion) {
+        WitlyLog.info("suggestions: inserted suggestion #\(suggestion.id) into composer")
+        onInsertSuggestion?(suggestion.text)
+    }
+    
+    func openWitly() {
+        WitlyLog.verbose("suggestions: ✨ button tapped")
+        isPanelPresented = true
+    }
+    
+    // MARK: - Style controls
+    
+    /// Fetches the style-control roster once (repeat calls are a no-op) and hydrates persisted
+    /// global/per-room selections. Safe to call every time the panel's Settings tab appears.
+    func loadStyleControlsIfNeeded() {
+        guard styleControlsLoadTask == nil else { return }
+        styleControlsLoadTask = Task { [weak self] in
+            guard let self else { return }
+            await styleControlsStore.loadIfNeeded()
+            do {
+                let catalog = try await apiClient.getCatalog()
+                let prompt = catalog.prompts.first { $0.feature == "suggestions/me_wittier" && $0.isDefault }
+                styleControls = prompt?.styleControls ?? []
+            } catch {
+                WitlyLog.warning("suggestions: failed loading style controls: \(type(of: error))")
+            }
+        }
+    }
+    
+    /// The room's effective value for `controlID` — its per-room override if set, else the global
+    /// default, else the control's own backend-defined default.
+    func effectiveStyleValue(for control: WitlyStyleControl) -> String {
+        styleControlsStore.effectiveValues(forRoom: roomID)[control.id] ?? control.defaultOption
+    }
+    
+    var hasRoomStyleOverride: Bool {
+        styleControlsStore.hasOverride(forRoom: roomID)
+    }
+    
+    /// "Custom for this chat" toggled on — enables per-room customization without changing any
+    /// values yet (they still inherit the global default until individually edited).
+    func enableRoomStyleOverride() {
+        Task { await styleControlsStore.enableOverride(forRoom: roomID) }
+    }
+    
+    func setGlobalStyleValue(controlID: String, optionID: String) {
+        Task { await styleControlsStore.setGlobal(controlID: controlID, optionID: optionID) }
+    }
+    
+    func setRoomStyleValue(controlID: String, optionID: String) {
+        Task { await styleControlsStore.setRoomOverride(roomID: roomID, controlID: controlID, optionID: optionID) }
+    }
+    
+    /// "Use global default" — clears every per-room override for this room in one step.
+    func resetRoomStyleOverrides() {
+        Task { await styleControlsStore.resetRoom(roomID) }
+    }
+    
+    // MARK: - Private
+    
+    private func invalidateForNewMessage() {
+        generationTask?.cancel()
+        generationTask = nil
+        state = .idle
     }
     
     /// Never surface raw backend error strings verbatim (they're written for logs/admins, e.g.

@@ -132,17 +132,18 @@ private struct WitlySuggestionChip: View {
     let maxWidth: CGFloat
     let onTap: () -> Void
     
-    /// The text's natural (unwrapped) width, measured by `naturalWidthMeasurer` below. Drives
-    /// `min(naturalWidth, maxWidth)` so short suggestions shrink to fit instead of every card
-    /// matching `maxWidth`. Seeded with `maxWidth` so the card doesn't flash oversized before the
-    /// first measurement.
-    @State private var naturalWidth: CGFloat
+    /// The text's natural (unwrapped) single-line width, computed synchronously from font metrics
+    /// rather than a runtime geometry measurement — `ForEach` keeps this chip's view identity
+    /// across regenerations (same `suggestion.id`), so a `@State`-based measurement doesn't reset
+    /// when `suggestion.text` changes for that id and can render a stale width for the new text.
+    /// `min(naturalWidth, maxWidth)` shrinks short cards, still caps long ones at `maxWidth`.
+    private var cardWidth: CGFloat {
+        min(Self.naturalTextWidth(suggestion.text) + 24, maxWidth) // 24 = 12pt horizontal padding × 2
+    }
     
-    init(suggestion: WitlySuggestion, maxWidth: CGFloat, onTap: @escaping () -> Void) {
-        self.suggestion = suggestion
-        self.maxWidth = maxWidth
-        self.onTap = onTap
-        _naturalWidth = State(initialValue: maxWidth)
+    private static func naturalTextWidth(_ text: String) -> CGFloat {
+        let font = UIFont.preferredFont(forTextStyle: .footnote) // matches .compound.bodySM
+        return ceil((text as NSString).size(withAttributes: [.font: font]).width)
     }
     
     var body: some View {
@@ -154,12 +155,11 @@ private struct WitlySuggestionChip: View {
                 .lineLimit(3)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(naturalWidthMeasurer)
                 // Rigid width BEFORE fixedSize so the height is measured at the exact width the
                 // card renders at — `frame(maxWidth:)` alone doesn't reliably force `Text` to wrap
                 // inside this unconstrained-width horizontal ScrollView, which is what was cropping
-                // taller cards. `min(naturalWidth, maxWidth)` still lets short cards shrink to fit.
-                .frame(width: min(naturalWidth, maxWidth), alignment: .leading)
+                // taller cards.
+                .frame(width: cardWidth, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
                 // Stretch to the row's height (the tallest sibling card) so every card is the same
                 // height; `.leading` centres vertically while keeping the text left-aligned.
@@ -169,18 +169,6 @@ private struct WitlySuggestionChip: View {
         .buttonStyle(.plain)
         .accessibilityLabel(Text(suggestion.text))
         .accessibilityHint("Insert as a draft in the composer")
-    }
-    
-    /// Invisible single-line copy of the card's text, used only to measure the width it would take
-    /// up unwrapped. `fixedSize(horizontal: true)` makes it report that ideal width regardless of
-    /// the proposal it's given, so it stays accurate no matter where `.background` places it.
-    private var naturalWidthMeasurer: some View {
-        Text(suggestion.text)
-            .font(.compound.bodySM)
-            .lineLimit(1)
-            .fixedSize(horizontal: true, vertical: true)
-            .readWidth($naturalWidth)
-            .hidden()
     }
 }
 

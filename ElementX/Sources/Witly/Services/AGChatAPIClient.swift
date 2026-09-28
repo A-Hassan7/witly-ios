@@ -37,6 +37,48 @@ nonisolated struct AGChatAPIError: Error, Sendable {
     let detail: String
 }
 
+// MARK: - Style controls
+
+/// One selectable level of a `WitlyStyleControl` (e.g. "Low"). The backend's underlying
+/// prompt-injection text for this option is never sent to the client — only `id`/`label`
+/// (`app.ai.style_controls.sanitize_style_controls_for_client`).
+nonisolated struct WitlyStyleControlOption: Sendable, Codable, Identifiable, Equatable {
+    let id: String
+    let label: String
+}
+
+/// A single response-style control (e.g. Boldness) that the active "Me + Wittier" prompt supports.
+/// Metadata-only — the roster and copy are entirely backend-owned (`ai_prompts.style_controls_schema`),
+/// so the client never hardcodes which controls exist.
+nonisolated struct WitlyStyleControl: Sendable, Codable, Identifiable, Equatable {
+    let id: String
+    let name: String
+    let description: String
+    let defaultOption: String
+    let options: [WitlyStyleControlOption]
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, options
+        case defaultOption = "default"
+    }
+}
+
+nonisolated struct WitlyCatalogPrompt: Sendable, Codable {
+    let feature: String
+    let isDefault: Bool
+    let styleControls: [WitlyStyleControl]?
+    
+    enum CodingKeys: String, CodingKey {
+        case feature
+        case isDefault = "is_default"
+        case styleControls = "style_controls"
+    }
+}
+
+nonisolated struct WitlyCatalogResponse: Sendable, Codable {
+    let prompts: [WitlyCatalogPrompt]
+}
+
 // MARK: - AI suggestions
 
 /// Body for `POST /suggestions`. `variables` is untyped JSON (feature-specific), so it's carried as
@@ -184,8 +226,12 @@ nonisolated struct AGChatAPIClient: Sendable {
     /// `["messages": [["sender_id": ..., "is_own": ..., "body": ...], ...]]` for `suggestions/mix`).
     /// The response's `streamKey` is then read via `WitlyAIStreamClient` — this call only enqueues
     /// the generation, it does not itself return suggestions.
+    ///
+    /// `styleControls` is `{control_id: option_id}` (e.g. `["boldness": "high"]`) — stable
+    /// identifiers only, never prompt text. The backend resolves these against the active prompt's
+    /// own `style_controls_schema` and ignores anything it doesn't recognise.
     func postSuggestions(feature: String, variables: [String: Any], version: String? = nil,
-                         roomId: String? = nil) async throws -> SuggestionsResponse {
+                         roomId: String? = nil, styleControls: [String: String]? = nil) async throws -> SuggestionsResponse {
         var body: [String: Any] = ["feature": feature, "variables": variables]
         if let version {
             body["version"] = version
@@ -193,7 +239,16 @@ nonisolated struct AGChatAPIClient: Sendable {
         if let roomId {
             body["room_id"] = roomId
         }
+        if let styleControls, !styleControls.isEmpty {
+            body["style_controls"] = styleControls
+        }
         return try await request("/suggestions", method: "POST", body: body)
+    }
+    
+    /// The set of active prompts (+ the features/style-controls they expose). Used to render the
+    /// Witly Settings tab's style controls from backend-owned metadata rather than a hardcoded roster.
+    func getCatalog() async throws -> WitlyCatalogResponse {
+        try await request("/ai/catalog", method: "GET")
     }
     
     // MARK: - Bridges

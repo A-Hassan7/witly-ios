@@ -118,15 +118,10 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
         // and `shareText(_:)` rather than adding further core seams.
         witlySuggestionsViewModel = WitlyRoomSuggestionsViewModel(roomID: parameters.roomProxy.id,
                                                                   timelineController: parameters.timelineController,
-                                                                  apiClient: AGChatAPIClient(session: WitlySession()))
+                                                                  apiClient: AGChatAPIClient(session: WitlySession()),
+                                                                  styleControlsStore: WitlyStyleControlsStore(clientProxy: parameters.userSession.clientProxy))
         
-        let userIndicatorController = parameters.userIndicatorController
         witlySuggestionsViewModel.onInsertSuggestion = { [weak self] text in self?.shareText(text) }
-        witlySuggestionsViewModel.onOpenWitly = { [weak userIndicatorController] in
-            // No Witly panel exists yet (out of scope for this task) — a clean, stable integration
-            // point to swap for a real `presentWitlyPanel` action later.
-            userIndicatorController?.submitIndicator(UserIndicator(title: "Witly — coming soon"))
-        }
     }
     
     // MARK: - Public

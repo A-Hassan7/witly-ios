@@ -4403,6 +4403,90 @@ nonisolated class ClientProxyMock: ClientProxyProtocol, @unchecked Sendable {
             return configurePresenceSendImmediatelyReturnValue
         }
     }
+    //MARK: - witlyAccountDataEvent
+
+    private let witlyAccountDataEventEventTypeCallsCountLock = NSLock()
+    private nonisolated(unsafe) var witlyAccountDataEventEventTypeUnderlyingCallsCount = 0
+    var witlyAccountDataEventEventTypeCallsCount: Int {
+        get { witlyAccountDataEventEventTypeCallsCountLock.withLock { witlyAccountDataEventEventTypeUnderlyingCallsCount } }
+        set { witlyAccountDataEventEventTypeCallsCountLock.withLock { witlyAccountDataEventEventTypeUnderlyingCallsCount = newValue } }
+    }
+    var witlyAccountDataEventEventTypeCalled: Bool {
+        return witlyAccountDataEventEventTypeCallsCount > 0
+    }
+    private let witlyAccountDataEventEventTypeReceivedEventTypeLock = NSLock()
+    private nonisolated(unsafe) var witlyAccountDataEventEventTypeUnderlyingReceivedEventType: String?
+    var witlyAccountDataEventEventTypeReceivedEventType: String? {
+        get { witlyAccountDataEventEventTypeReceivedEventTypeLock.withLock { witlyAccountDataEventEventTypeUnderlyingReceivedEventType } }
+        set { witlyAccountDataEventEventTypeReceivedEventTypeLock.withLock { witlyAccountDataEventEventTypeUnderlyingReceivedEventType = newValue } }
+    }
+    private let witlyAccountDataEventEventTypeReceivedInvocationsLock = NSLock()
+    private nonisolated(unsafe) var witlyAccountDataEventEventTypeUnderlyingReceivedInvocations: [String] = []
+    var witlyAccountDataEventEventTypeReceivedInvocations: [String] {
+        get { witlyAccountDataEventEventTypeReceivedInvocationsLock.withLock { witlyAccountDataEventEventTypeUnderlyingReceivedInvocations } }
+        set { witlyAccountDataEventEventTypeReceivedInvocationsLock.withLock { witlyAccountDataEventEventTypeUnderlyingReceivedInvocations = newValue } }
+    }
+
+    private let witlyAccountDataEventEventTypeReturnValueLock = NSLock()
+    private nonisolated(unsafe) var witlyAccountDataEventEventTypeUnderlyingReturnValue: Result<String?, ClientProxyError>!
+    var witlyAccountDataEventEventTypeReturnValue: Result<String?, ClientProxyError>! {
+        get { witlyAccountDataEventEventTypeReturnValueLock.withLock { witlyAccountDataEventEventTypeUnderlyingReturnValue } }
+        set { witlyAccountDataEventEventTypeReturnValueLock.withLock { witlyAccountDataEventEventTypeUnderlyingReturnValue = newValue } }
+    }
+    nonisolated(unsafe) var witlyAccountDataEventEventTypeClosure: ((String) async -> Result<String?, ClientProxyError>)?
+
+    @concurrent func witlyAccountDataEvent(eventType: String) async -> Result<String?, ClientProxyError> {
+        witlyAccountDataEventEventTypeCallsCountLock.withLock { witlyAccountDataEventEventTypeUnderlyingCallsCount += 1 }
+        witlyAccountDataEventEventTypeReceivedEventType = eventType
+        witlyAccountDataEventEventTypeReceivedInvocationsLock.withLock { witlyAccountDataEventEventTypeUnderlyingReceivedInvocations.append(eventType) }
+        if let witlyAccountDataEventEventTypeClosure = witlyAccountDataEventEventTypeClosure {
+            return await witlyAccountDataEventEventTypeClosure(eventType)
+        } else {
+            return witlyAccountDataEventEventTypeReturnValue
+        }
+    }
+    //MARK: - setWitlyAccountDataEvent
+
+    private let setWitlyAccountDataEventEventTypeContentCallsCountLock = NSLock()
+    private nonisolated(unsafe) var setWitlyAccountDataEventEventTypeContentUnderlyingCallsCount = 0
+    var setWitlyAccountDataEventEventTypeContentCallsCount: Int {
+        get { setWitlyAccountDataEventEventTypeContentCallsCountLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingCallsCount } }
+        set { setWitlyAccountDataEventEventTypeContentCallsCountLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingCallsCount = newValue } }
+    }
+    var setWitlyAccountDataEventEventTypeContentCalled: Bool {
+        return setWitlyAccountDataEventEventTypeContentCallsCount > 0
+    }
+    private let setWitlyAccountDataEventEventTypeContentReceivedArgumentsLock = NSLock()
+    private nonisolated(unsafe) var setWitlyAccountDataEventEventTypeContentUnderlyingReceivedArguments: (eventType: String, content: String)?
+    var setWitlyAccountDataEventEventTypeContentReceivedArguments: (eventType: String, content: String)? {
+        get { setWitlyAccountDataEventEventTypeContentReceivedArgumentsLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingReceivedArguments } }
+        set { setWitlyAccountDataEventEventTypeContentReceivedArgumentsLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingReceivedArguments = newValue } }
+    }
+    private let setWitlyAccountDataEventEventTypeContentReceivedInvocationsLock = NSLock()
+    private nonisolated(unsafe) var setWitlyAccountDataEventEventTypeContentUnderlyingReceivedInvocations: [(eventType: String, content: String)] = []
+    var setWitlyAccountDataEventEventTypeContentReceivedInvocations: [(eventType: String, content: String)] {
+        get { setWitlyAccountDataEventEventTypeContentReceivedInvocationsLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingReceivedInvocations } }
+        set { setWitlyAccountDataEventEventTypeContentReceivedInvocationsLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingReceivedInvocations = newValue } }
+    }
+
+    private let setWitlyAccountDataEventEventTypeContentReturnValueLock = NSLock()
+    private nonisolated(unsafe) var setWitlyAccountDataEventEventTypeContentUnderlyingReturnValue: Result<Void, ClientProxyError>!
+    var setWitlyAccountDataEventEventTypeContentReturnValue: Result<Void, ClientProxyError>! {
+        get { setWitlyAccountDataEventEventTypeContentReturnValueLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingReturnValue } }
+        set { setWitlyAccountDataEventEventTypeContentReturnValueLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingReturnValue = newValue } }
+    }
+    nonisolated(unsafe) var setWitlyAccountDataEventEventTypeContentClosure: ((String, String) async -> Result<Void, ClientProxyError>)?
+
+    @concurrent func setWitlyAccountDataEvent(eventType: String, content: String) async -> Result<Void, ClientProxyError> {
+        setWitlyAccountDataEventEventTypeContentCallsCountLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingCallsCount += 1 }
+        setWitlyAccountDataEventEventTypeContentReceivedArguments = (eventType: eventType, content: content)
+        setWitlyAccountDataEventEventTypeContentReceivedInvocationsLock.withLock { setWitlyAccountDataEventEventTypeContentUnderlyingReceivedInvocations.append((eventType: eventType, content: content)) }
+        if let setWitlyAccountDataEventEventTypeContentClosure = setWitlyAccountDataEventEventTypeContentClosure {
+            return await setWitlyAccountDataEventEventTypeContentClosure(eventType, content)
+        } else {
+            return setWitlyAccountDataEventEventTypeContentReturnValue
+        }
+    }
 }
 nonisolated class CompletionSuggestionServiceMock: CompletionSuggestionServiceProtocol, @unchecked Sendable {
     var suggestionsPublisher: AnyPublisher<[SuggestionItem], Never> {
