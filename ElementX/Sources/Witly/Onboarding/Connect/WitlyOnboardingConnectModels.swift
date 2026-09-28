@@ -5,11 +5,13 @@
 
 import Foundation
 
-/// Mirrors the web fork's `ConnectDialog` state machine: picker → preparing → phone → pairing →
-/// connected. iOS only offers WhatsApp today; other platforms are shown as "coming soon".
+/// Mirrors the web fork's `ConnectDialog` state machine: picker → preparing → ready → phone →
+/// pairing → connected. iOS only offers WhatsApp today; other platforms are shown as "coming soon".
 enum WitlyOnboardingConnectPhase: Equatable {
     case picker
     case preparing
+    /// I2-3: preparation finished, but we don't auto-advance — wait for the user to tap Continue.
+    case ready
     case phone
     case pairing
     case connected
@@ -17,7 +19,6 @@ enum WitlyOnboardingConnectPhase: Equatable {
 
 struct WitlyOnboardingConnectViewState: BindableState {
     var phase: WitlyOnboardingConnectPhase = .picker
-    var prepareDetail = "Hang tight — magic in progress"
     var errorMessage: String?
     var pairingCode: String?
     var isLoading = false
@@ -33,6 +34,7 @@ enum WitlyOnboardingConnectViewAction {
     case connectWhatsApp
     case skip
     case retryPrepare
+    case confirmReady
     case submitPhone
     case startOver
     case finish

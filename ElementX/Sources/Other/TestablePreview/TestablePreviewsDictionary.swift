@@ -224,6 +224,7 @@ enum TestablePreviewsDictionary {
             "VoiceMessageRoomTimelineView_Previews" : VoiceMessageRoomTimelineView_Previews.self,
             "VoiceMessageTrashButton_Previews" : VoiceMessageTrashButton_Previews.self,
             "WaveformCursorView_Previews" : WaveformCursorView_Previews.self,
+            "WitlyOnboardingAccountSetupScreen_Previews" : WitlyOnboardingAccountSetupScreen_Previews.self,
             "WitlyOnboardingAuthScreen_Previews" : WitlyOnboardingAuthScreen_Previews.self,
             "WitlyOnboardingConnectScreen_Previews" : WitlyOnboardingConnectScreen_Previews.self,
             "WitlyOnboardingIntroScreen_Previews" : WitlyOnboardingIntroScreen_Previews.self,

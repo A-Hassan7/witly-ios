@@ -21,12 +21,12 @@ struct WitlyOnboardingFlowCoordinatorParameters {
     let userIndicatorController: UserIndicatorControllerProtocol
 }
 
-/// Drives Witly's onboarding — carousel → auth → connect — replacing Element's own
+/// Drives Witly's onboarding — intro → auth → connect — replacing Element's own
 /// `AuthenticationFlowCoordinator` at the seam in `AppCoordinator.startAuthentication()`.
 ///
 /// Per product decision there's no Wit-selection step and no unconditional "loading" screen:
-/// provisioning is kicked off in the background as soon as auth succeeds, and a loading indicator
-/// is only shown if it hasn't finished by the time the user reaches the end of the flow.
+/// provisioning is kicked off in the background as soon as auth succeeds, and the I2-2 account-setup
+/// screen is only shown (right before "Connect your chats") if it hasn't finished yet.
 final class WitlyOnboardingFlowCoordinator: FlowCoordinatorProtocol {
     weak var delegate: WitlyOnboardingFlowCoordinatorDelegate?
     
@@ -43,6 +43,9 @@ final class WitlyOnboardingFlowCoordinator: FlowCoordinatorProtocol {
     
     /// Kicked off as soon as auth succeeds so it can run in parallel with the connect step.
     private var provisioningTask: Task<WitlyMatrixCredentials, Error>?
+    /// Set (success or failure) when `provisioningTask` finishes; checked synchronously by
+    /// `isProvisioningLikelyReady()` after its grace period, since a `Task` exposes no such flag.
+    private var isProvisioningComplete = false
     
     init(parameters: WitlyOnboardingFlowCoordinatorParameters) {
         self.parameters = parameters
@@ -82,13 +85,38 @@ final class WitlyOnboardingFlowCoordinator: FlowCoordinatorProtocol {
         coordinator.actionsPublisher.sink { [weak self] action in
             switch action {
             case .authenticated:
-                self?.beginProvisioning()
-                self?.presentConnect()
+                self?.handleAuthenticated()
             }
         }
         .store(in: &cancellables)
         
         navigationStackCoordinator.push(coordinator)
+    }
+    
+    /// I2-2: gate on account readiness right here, before "Connect your chats" — not with an
+    /// unconditional loading screen, only if provisioning genuinely isn't ready yet.
+    private func handleAuthenticated() {
+        beginProvisioning()
+        
+        Task {
+            if await isProvisioningLikelyReady() {
+                presentConnect()
+            } else {
+                presentAccountSetup()
+            }
+        }
+    }
+    
+    private func presentAccountSetup() {
+        let coordinator = WitlyOnboardingAccountSetupCoordinator()
+        navigationStackCoordinator.push(coordinator)
+        
+        Task {
+            // Errors surface later at the actual restore step; this screen has no error UI (I2-2).
+            _ = try? await provisioningTask?.value
+            navigationStackCoordinator.pop()
+            presentConnect()
+        }
     }
     
     private func presentConnect() {
@@ -109,16 +137,30 @@ final class WitlyOnboardingFlowCoordinator: FlowCoordinatorProtocol {
     /// Fires as soon as auth succeeds so it's likely already `READY` by the time the user finishes
     /// the connect step, avoiding any loading UI in the common case.
     private func beginProvisioning() {
+        isProvisioningComplete = false
         provisioningTask = Task {
-            try await provisioning.provision()
+            defer { isProvisioningComplete = true }
+            return try await provisioning.provision()
         }
+    }
+    
+    /// Waits out a short grace period so a fast provision never flashes the account-setup screen
+    /// at all. Deliberately doesn't race against `provisioningTask` directly in a `TaskGroup`: an
+    /// unbounded `await task.value` inside a task-group child doesn't respect `cancelAll()` (it
+    /// only stops checking for cancellation at its own suspension points, of which there are none
+    /// here), so `withTaskGroup` wouldn't actually return until the real (potentially 30-60s)
+    /// provisioning finished — silently defeating the whole point of the race.
+    private func isProvisioningLikelyReady() async -> Bool {
+        try? await Task.sleep(for: .milliseconds(300))
+        return isProvisioningComplete
     }
     
     private func finishOnboarding() {
         Task {
             do {
-                let credentials = try await awaitProvisioning()
-                stopHoldingIndicator()
+                guard let credentials = try await provisioningTask?.value else {
+                    throw WitlyProvisioningError.missingCredentials
+                }
                 
                 switch await sessionRestorer.restore(credentials: credentials) {
                 case .success(let userSession):
@@ -129,59 +171,12 @@ final class WitlyOnboardingFlowCoordinator: FlowCoordinatorProtocol {
                 }
             } catch {
                 WitlyLog.error("Provisioning failed: \(error)")
-                stopHoldingIndicator()
                 showFailureIndicator()
             }
         }
     }
     
-    /// Awaits the in-flight provisioning task, only surfacing a loading indicator if it's still
-    /// running after a short grace period (per the "no unconditional loading screen" decision).
-    private func awaitProvisioning() async throws -> WitlyMatrixCredentials {
-        guard let provisioningTask else { throw WitlyProvisioningError.missingCredentials }
-        
-        enum RaceResult {
-            case credentials(WitlyMatrixCredentials)
-            case stillWaiting
-        }
-        
-        return try await withThrowingTaskGroup(of: RaceResult.self) { group in
-            group.addTask { try await .credentials(provisioningTask.value) }
-            group.addTask {
-                try? await Task.sleep(for: .milliseconds(400))
-                return .stillWaiting
-            }
-            
-            var credentials: WitlyMatrixCredentials?
-            while credentials == nil, let next = try await group.next() {
-                switch next {
-                case .credentials(let value):
-                    credentials = value
-                case .stillWaiting:
-                    startHoldingIndicator()
-                }
-            }
-            group.cancelAll()
-            
-            guard let credentials else { throw WitlyProvisioningError.timedOut }
-            return credentials
-        }
-    }
-    
     // MARK: - Indicators
-    
-    private static let holdingIndicatorID = "WitlyOnboardingHolding"
-    
-    private func startHoldingIndicator() {
-        parameters.userIndicatorController.submitIndicator(UserIndicator(id: Self.holdingIndicatorID,
-                                                                         type: .modal,
-                                                                         title: "Setting up your inbox…",
-                                                                         persistent: true))
-    }
-    
-    private func stopHoldingIndicator() {
-        parameters.userIndicatorController.retractIndicatorWithId(Self.holdingIndicatorID)
-    }
     
     private func showFailureIndicator() {
         parameters.userIndicatorController.submitIndicator(UserIndicator(title: "Something went wrong. Please try again.",

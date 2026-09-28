@@ -16,7 +16,7 @@ struct WitlyOnboardingConnectScreen: View {
             switch context.viewState.phase {
             case .picker:
                 picker
-            case .preparing:
+            case .preparing, .ready:
                 preparing
             case .phone:
                 phoneEntry
@@ -48,12 +48,16 @@ struct WitlyOnboardingConnectScreen: View {
                     .multilineTextAlignment(.center)
                 
                 VStack(spacing: 10) {
-                    platformRow(emoji: "🟢", name: "WhatsApp", subtitle: "Link with your phone number", enabled: true) {
+                    platformRow(emoji: "🟢", name: "WhatsApp", subtitle: "Link with your phone number",
+                                enabled: true) {
                         context.send(viewAction: .connectWhatsApp)
                     }
-                    platformRow(emoji: "📸", name: "Instagram", subtitle: "Coming soon", enabled: false, action: nil)
-                    platformRow(emoji: "💬", name: "Messenger", subtitle: "Coming soon", enabled: false, action: nil)
-                    platformRow(emoji: "🎮", name: "Discord", subtitle: "Coming soon", enabled: false, action: nil)
+                    platformRow(emoji: "📸", name: "Instagram", subtitle: "Coming soon", enabled: false,
+                                action: nil)
+                    platformRow(emoji: "💬", name: "Messenger", subtitle: "Coming soon", enabled: false,
+                                action: nil)
+                    platformRow(emoji: "🎮", name: "Discord", subtitle: "Coming soon", enabled: false,
+                                action: nil)
                 }
                 .padding(.top, 8)
             }
@@ -109,10 +113,15 @@ struct WitlyOnboardingConnectScreen: View {
     
     // MARK: - Preparing
     
+    /// I2-3: while WhatsApp is being prepared, use the wait to show how connecting will work —
+    /// a looping instructional placeholder (final content/video TBD) plus a lightweight step list.
+    /// Stays on this same screen once ready (in case the user hasn't finished reading it yet) —
+    /// only the bottom content changes, from an indeterminate bar to a Continue button.
     private var preparing: some View {
         FullscreenDialog {
             VStack(spacing: 16) {
-                BigIcon(icon: \.chatSolid)
+                Text("🟢").font(.system(size: 40))
+                
                 if let errorMessage = context.viewState.errorMessage {
                     Text("That didn't work")
                         .font(.compound.headingMDBold)
@@ -127,15 +136,65 @@ struct WitlyOnboardingConnectScreen: View {
                     }
                     .buttonStyle(.compound(.primary))
                 } else {
-                    Text(context.viewState.prepareDetail)
+                    Text("Getting WhatsApp ready…")
                         .font(.compound.headingMDBold)
                         .foregroundColor(.compound.textPrimary)
                         .multilineTextAlignment(.center)
-                    ProgressView()
+                    Text("We're preparing your connection. Here's what you'll do next.")
+                        .font(.compound.bodyMD)
+                        .foregroundColor(.compound.textSecondary)
+                        .multilineTextAlignment(.center)
+                    
+                    whatsAppTutorialPlaceholder
+                    whatsAppStepsSummary
+                    
+                    if context.viewState.phase == .preparing {
+                        WitlyIndeterminateBar()
+                            .frame(width: 200)
+                    }
                 }
             }
             .padding(.horizontal, 16)
-        } bottomContent: { EmptyView() }
+        } bottomContent: {
+            if context.viewState.phase == .ready {
+                Button(L10n.actionContinue) {
+                    context.send(viewAction: .confirmReady)
+                }
+                .buttonStyle(.compound(.primary))
+            }
+        }
+    }
+    
+    private var whatsAppTutorialPlaceholder: some View {
+        VStack(spacing: 6) {
+            Text("How connecting WhatsApp works")
+                .font(.compound.bodyXSSemibold)
+                .foregroundColor(.compound.textSecondary)
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.compound.bgSubtleSecondaryLevel0)
+                .frame(height: 140)
+                .overlay {
+                    VStack(spacing: 6) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.compound.iconAccentTertiary)
+                        Text("Tutorial preview")
+                            .font(.compound.bodyXS)
+                            .foregroundColor(.compound.textSecondary)
+                    }
+                }
+        }
+    }
+    
+    private var whatsAppStepsSummary: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("1. Open WhatsApp")
+            Text("2. Go to Linked Devices")
+            Text("3. Enter the code we give you")
+        }
+        .font(.compound.bodySM)
+        .foregroundColor(.compound.textSecondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     // MARK: - Phone entry

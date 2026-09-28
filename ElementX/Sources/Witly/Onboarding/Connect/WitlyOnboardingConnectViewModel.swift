@@ -13,14 +13,16 @@ private let whatsAppFlowID = "phone"
 /// Drives the WhatsApp connect step: deploy/register the bridge, phone-number login, pairing-code
 /// long-poll, then completion — mirroring the web fork's `ConnectDialog` state machine against the
 /// same `/bridges/whatsapp/...` provisioning endpoints.
-final class WitlyOnboardingConnectViewModel: WitlyOnboardingConnectViewModelType, WitlyOnboardingConnectViewModelProtocol {
+final class WitlyOnboardingConnectViewModel: WitlyOnboardingConnectViewModelType,
+    WitlyOnboardingConnectViewModelProtocol {
     private let api: AGChatAPIClient
     private let connectController: WitlyBridgeConnectController
     
     private var loginId: String?
     private var currentStep: LoginStep?
     
-    private let actionsSubject: PassthroughSubject<WitlyOnboardingConnectViewModelAction, Never> = .init()
+    private let actionsSubject: PassthroughSubject<WitlyOnboardingConnectViewModelAction, Never> =
+        .init()
     var actionsPublisher: AnyPublisher<WitlyOnboardingConnectViewModelAction, Never> {
         actionsSubject.eraseToAnyPublisher()
     }
@@ -35,6 +37,8 @@ final class WitlyOnboardingConnectViewModel: WitlyOnboardingConnectViewModelType
         switch viewAction {
         case .connectWhatsApp, .retryPrepare:
             prepare()
+        case .confirmReady:
+            state.phase = .phone
         case .submitPhone:
             Task { await startLogin() }
         case .startOver:
@@ -55,12 +59,12 @@ final class WitlyOnboardingConnectViewModel: WitlyOnboardingConnectViewModelType
     private func prepare() {
         state.phase = .preparing
         state.errorMessage = nil
-        state.prepareDetail = "Hang tight — magic in progress"
         
         Task {
             do {
                 _ = try await connectController.ensureBridgeReady(service: .whatsapp)
-                state.phase = .phone
+                // I2-3: don't auto-advance — let the user confirm before moving to phone entry.
+                state.phase = .ready
             } catch {
                 WitlyLog.error("Failed preparing WhatsApp bridge: \(error)")
                 state.errorMessage = "That didn't work. Please try again."
