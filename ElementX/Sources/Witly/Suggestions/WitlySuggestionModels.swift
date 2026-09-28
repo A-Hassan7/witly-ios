@@ -39,13 +39,23 @@ nonisolated struct WitlyRoomSuggestionsState: Equatable, Sendable {
 }
 
 /// One recent room message, flattened for the `suggestions/mix` backend contract
-/// (`{sender_id, is_own, body}` — see `backend/app/ai/handlers/mix_suggestions.py`). Never logged.
+/// (`{sender_id, is_own, body, sender_display_name?, timestamp}` — see
+/// `backend/app/ai/handlers/mix_suggestions.py`). Never logged.
 nonisolated struct WitlyContextMessage: Sendable {
     let senderID: String
     let isOwn: Bool
     let body: String
+    /// The sender's resolved display name, when known — lets the backend prompt reference a real
+    /// name instead of a raw Matrix ID. `nil` when the profile hasn't resolved yet.
+    let senderDisplayName: String?
+    /// Epoch milliseconds the message was sent, matching the web client's `timestamp` convention.
+    let timestamp: Int
     
     var jsonObject: [String: Any] {
-        ["sender_id": senderID, "is_own": isOwn, "body": body]
+        var object: [String: Any] = ["sender_id": senderID, "is_own": isOwn, "body": body, "timestamp": timestamp]
+        if let senderDisplayName {
+            object["sender_display_name"] = senderDisplayName
+        }
+        return object
     }
 }

@@ -76,7 +76,11 @@ final class WitlyRoomTimelineWatcher {
         for item in timelineController.timelineItems.reversed() {
             guard let message = item as? EventBasedTimelineItemProtocol, !message.body.isEmpty
             else { continue }
-            out.append(WitlyContextMessage(senderID: message.sender.id, isOwn: message.isOutgoing, body: message.body))
+            out.append(WitlyContextMessage(senderID: message.sender.id,
+                                           isOwn: message.isOutgoing,
+                                           body: message.body,
+                                           senderDisplayName: message.sender.displayName,
+                                           timestamp: Int(message.timestamp.timeIntervalSince1970 * 1000)))
             if out.count >= limit {
                 break
             }
