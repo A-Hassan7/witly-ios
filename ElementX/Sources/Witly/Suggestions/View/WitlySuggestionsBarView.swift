@@ -22,6 +22,11 @@ struct WitlySuggestionsBarView: View {
     /// `WitlyRoomSuggestionsViewModel.onOpenWitly`.
     let onOpenWitly: () -> Void
     
+    /// The bar's own width, used to cap each card at 40% of it so medium-length replies stay
+    /// readable without the carousel becoming a full-width panel. Seeded with a plausible
+    /// pre-layout guess so cards don't flash oversized before the first `readWidth` measurement.
+    @State private var availableWidth: CGFloat = 320
+    
     var body: some View {
         HStack(alignment: .center, spacing: 8) {
             witlyButton
@@ -40,6 +45,7 @@ struct WitlySuggestionsBarView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, isCollapsed ? 6 : 8)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .readWidth($availableWidth)
         .background(Color.compound.bgCanvasDefault)
         .animation(.default, value: state)
     }
@@ -72,9 +78,9 @@ struct WitlySuggestionsBarView: View {
     
     private var suggestionsContent: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(alignment: .center, spacing: 8) {
                 ForEach(state.suggestions) { suggestion in
-                    WitlySuggestionChip(suggestion: suggestion) {
+                    WitlySuggestionChip(suggestion: suggestion, maxWidth: availableWidth * 0.4) {
                         onTapSuggestion(suggestion)
                     }
                 }
@@ -88,6 +94,10 @@ struct WitlySuggestionsBarView: View {
                 }
             }
         }
+        // Must be on the ScrollView itself: a horizontal ScrollView otherwise reports a minimal
+        // height to its parent and clips taller (wrapped, multi-line) cards. This makes it adopt
+        // its content's ideal height so the row grows to fit 2–3 line cards.
+        .fixedSize(horizontal: false, vertical: true)
     }
     
     private var regenerateButton: some View {
@@ -114,10 +124,12 @@ struct WitlySuggestionsBarView: View {
     }
 }
 
-/// One compact, horizontally-scrolling suggestion card. Text-first; no source/persona label, model
-/// name, or confidence score (product-spec §7.1 / DRIVE-C4).
+/// One horizontally-scrolling suggestion card. Text-first; no source/persona label, model name, or
+/// confidence score (product-spec §7.1 / DRIVE-C4). Wraps up to 3 lines and is capped at 40% of the
+/// bar's width, so medium-length replies stay readable without the carousel becoming a full panel.
 private struct WitlySuggestionChip: View {
     let suggestion: WitlySuggestion
+    let maxWidth: CGFloat
     let onTap: () -> Void
     
     var body: some View {
@@ -125,10 +137,17 @@ private struct WitlySuggestionChip: View {
             Text(suggestion.text)
                 .font(.compound.bodySM)
                 .foregroundColor(.compound.textPrimary)
-                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .lineLimit(3)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .frame(maxWidth: 220, alignment: .leading)
+                // Caps (not pins) the width so text still wraps within the bound, but shorter
+                // suggestions shrink to fit instead of every card matching the widest one.
+                .frame(maxWidth: maxWidth, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+                // Stretch to the row's height (the tallest sibling card) so every card is the same
+                // height; `.leading` centres vertically while keeping the text left-aligned.
+                .frame(maxHeight: .infinity, alignment: .leading)
                 .background(Color.compound.bgSubtleSecondaryLevel0, in: RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)

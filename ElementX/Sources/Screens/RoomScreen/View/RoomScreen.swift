@@ -116,6 +116,12 @@ struct RoomScreen: View {
                         context.send(viewAction: .footerViewAction(action))
                     }
                     
+                    // WITLY SEAM: moved from ComposerToolbar.swift so it no longer separates the
+                    // suggestion carousel from the composer beneath it.
+                    if !composerToolbar.context.viewState.isRoomEncrypted {
+                        notEncryptedNotice
+                    }
+                    
                     // WITLY SEAM: the compact suggestion bar sits between the timeline and the
                     // standard composer, which remains Element's own and unmodified below.
                     WitlySuggestionsBarContainer(viewModel: witlySuggestionsViewModel)
@@ -164,6 +170,20 @@ struct RoomScreen: View {
     
     private var witlySyncingBanner: some View {
         WitlySyncingBanner(text: "Catching up on older messages…")
+    }
+    
+    // WITLY SEAM: ported verbatim from ComposerToolbar.swift, which used to show this directly
+    // above the composer — now shown above the suggestion bar instead (see ComposerToolbar.swift).
+    private var notEncryptedNotice: some View {
+        Label {
+            Text(L10n.commonNotEncrypted)
+                .font(.compound.bodySM)
+                .foregroundStyle(.compound.textSecondary)
+        } icon: {
+            CompoundIcon(\.lockOff, size: .xSmall, relativeTo: .compound.bodyMD)
+                .foregroundStyle(.compound.iconInfoPrimary)
+        }
+        .padding(4.0)
     }
     
     private var pinnedItemsBanner: some View {

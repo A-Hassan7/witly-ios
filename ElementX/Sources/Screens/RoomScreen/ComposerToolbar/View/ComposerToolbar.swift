@@ -60,19 +60,8 @@ struct ComposerToolbar: View {
             }
         }
         .readFrame($frame)
-        .safeAreaInset(edge: .top) {
-            if !context.viewState.isRoomEncrypted {
-                Label {
-                    Text(L10n.commonNotEncrypted)
-                        .font(.compound.bodySM)
-                        .foregroundStyle(.compound.textSecondary)
-                } icon: {
-                    CompoundIcon(\.lockOff, size: .xSmall, relativeTo: .compound.bodyMD)
-                        .foregroundStyle(.compound.iconInfoPrimary)
-                }
-                .padding(4.0)
-            }
-        }
+        // WITLY SEAM: the "not encrypted" notice moved to RoomScreen.swift (above the Witly
+        // suggestion bar) so it no longer sits between the carousel and the composer itself.
         .overlay(alignment: .bottom) {
             ZStack {
                 if verticalSizeClass != .compact, !context.composerExpanded {
@@ -101,10 +90,12 @@ struct ComposerToolbar: View {
                 if context.viewState.isUploading {
                     ProgressView()
                         .scaledFrame(size: Compound.supportsGlass ? 44 : 36, relativeTo: .compound.headingLG)
-                        .scaledPadding(.vertical, trailingButtonVerticalPadding, relativeTo: .compound.headingLG)
+                        .scaledPadding(.vertical, trailingButtonVerticalPadding,
+                                       relativeTo: .compound.headingLG)
                 } else if context.viewState.showSendButton {
                     sendButton
-                        .scaledPadding(.vertical, trailingButtonVerticalPadding, relativeTo: .compound.headingLG)
+                        .scaledPadding(.vertical, trailingButtonVerticalPadding,
+                                       relativeTo: .compound.headingLG)
                 } else {
                     voiceMessageRecordingButton(mode: context.viewState.isVoiceMessageModeActivated ? .recording : .idle)
                         .scaledPadding(.vertical, trailingButtonVerticalPadding, relativeTo: .compound.headingLG)
@@ -167,7 +158,8 @@ struct ComposerToolbar: View {
         SendButton(mode: context.viewState.sendButtonMode, action: sendMessage)
             .accessibilityLabel(context.viewState.sendButtonAccessibilityLabel)
             .disabled(context.viewState.sendButtonDisabled)
-            .animation(.linear(duration: 0.1).disabledDuringTests(), value: context.viewState.sendButtonDisabled)
+            .animation(.linear(duration: 0.1).disabledDuringTests(),
+                       value: context.viewState.sendButtonDisabled)
             .keyboardShortcut(.return, modifiers: [.command])
             .accessibilityIdentifier(A11yIdentifiers.roomScreen.sendButton)
     }
