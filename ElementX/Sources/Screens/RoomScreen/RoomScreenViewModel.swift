@@ -218,13 +218,14 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
         roomProxy.knockRequestsStatePublisher
             // We only care about unseen requests
             .map { knockRequestsState in
-                guard case let .loaded(requests) = knockRequestsState else {
+                guard case .loaded(let requests) = knockRequestsState else {
                     return []
                 }
                 
-                return requests
-                    .filter { !$0.isSeen }
-                    .map(KnockRequestInfo.init)
+                return
+                    requests
+                        .filter { !$0.isSeen }
+                        .map(KnockRequestInfo.init)
             }
             // If the requests have the same event ids we can discard the output
             .removeDuplicates { Set($0.map(\.eventID)) == Set($1.map(\.eventID)) }
@@ -243,14 +244,16 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
         for change in changes {
             switch change.changedTo {
             case .pinViolation:
-                guard case let .success(member) = await roomProxy.getMember(userID: change.userId) else {
+                guard case .success(let member) = await roomProxy.getMember(userID: change.userId)
+                else {
                     MXLog.error("Failed retrieving room member for identity status change: \(change)")
                     continue
                 }
                 
                 identityPinningViolations[change.userId] = member
             case .verificationViolation:
-                guard case let .success(member) = await roomProxy.getMember(userID: change.userId) else {
+                guard case .success(let member) = await roomProxy.getMember(userID: change.userId)
+                else {
                     MXLog.error("Failed retrieving room member for identity status change: \(change)")
                     continue
                 }
@@ -275,8 +278,11 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
     
     private func updateVerificationBadge() async {
         guard roomProxy.infoPublisher.value.isDM,
-              let dmRecipient = roomProxy.membersPublisher.value.first(where: { $0.userID != roomProxy.ownUserID }),
-              case let .success(userIdentity) = await clientProxy.userIdentity(for: dmRecipient.userID, fallBackToServer: true) else {
+              let dmRecipient = roomProxy.membersPublisher.value.first(where: {
+                  $0.userID != roomProxy.ownUserID
+              }),
+              case .success(let userIdentity) = await clientProxy.userIdentity(for: dmRecipient.userID, fallBackToServer: true)
+        else {
             state.dmRecipientDetails.verification = .notVerified
             return
         }
@@ -323,10 +329,11 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
         
         for item in timelineItems {
             // Only remote events are pinned
-            if case let .event(event) = item,
+            if case .event(let event) = item,
                let eventID = event.id.eventID {
-                pinnedEventContents.updateValue(pinnedEventStringBuilder.buildAttributedString(for: event) ?? AttributedString(L10n.commonUnsupportedEvent),
-                                                forKey: eventID)
+                pinnedEventContents.updateValue(pinnedEventStringBuilder.buildAttributedString(for: event)
+                    ?? AttributedString(L10n.commonUnsupportedEvent),
+                    forKey: eventID)
             }
         }
         
@@ -378,7 +385,8 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
         }
         
         Task {
-            guard case let .success(pinnedEventsTimeline) = await roomProxy.pinnedEventsTimeline() else {
+            guard case .success(let pinnedEventsTimeline) = await roomProxy.pinnedEventsTimeline()
+            else {
                 return
             }
             
@@ -389,8 +397,9 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
     }
     
     private func acceptKnock(eventID: String) async {
-        guard case let .loaded(requests) = roomProxy.knockRequestsStatePublisher.value,
-              let request = requests.first(where: { $0.eventID == eventID }) else {
+        guard case .loaded(let requests) = roomProxy.knockRequestsStatePublisher.value,
+              let request = requests.first(where: { $0.eventID == eventID })
+        else {
             return
         }
         
@@ -405,7 +414,7 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
     }
     
     private func markAllKnocksAsSeen() async {
-        guard case let .loaded(requests) = roomProxy.knockRequestsStatePublisher.value else {
+        guard case .loaded(let requests) = roomProxy.knockRequestsStatePublisher.value else {
             return
         }
         state.handledEventIDs.formUnion(Set(requests.map(\.eventID)))

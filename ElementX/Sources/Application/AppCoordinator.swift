@@ -15,7 +15,8 @@ import Sentry
 import SwiftUI
 import Version
 
-class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDelegate, WitlyOnboardingFlowCoordinatorDelegate, NotificationManagerDelegate, SecureWindowManagerDelegate { // WITLY SEAM
+class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDelegate,
+    WitlyOnboardingFlowCoordinatorDelegate, NotificationManagerDelegate, SecureWindowManagerDelegate { // WITLY SEAM
     private let stateMachine: AppCoordinatorStateMachine
     private let navigationRootCoordinator: NavigationRootCoordinator
     private let userSessionStore: UserSessionStoreProtocol
@@ -150,7 +151,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                                             sdkGitSHA: sdkGitSha(),
                                             appHooks: appHooks)
         
-        Self.setupSentry(bugReportService: bugReportService, appSettings: appSettings, analytics: analyticsService)
+        Self.setupSentry(bugReportService: bugReportService, appSettings: appSettings,
+                         analytics: analyticsService)
         
         analyticsService.startIfEnabled()
         
@@ -159,7 +161,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         notificationManager.delegate = self
         notificationManager.start()
         
-        guard let currentVersion = Version(InfoPlistReader(bundle: .main).bundleShortVersionString) else {
+        guard let currentVersion = Version(InfoPlistReader(bundle: .main).bundleShortVersionString)
+        else {
             fatalError("The app's version number **must** use semver for migration purposes.")
         }
         
@@ -181,7 +184,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         appSettings.analyticsConsentStatePublisher
             .dropFirst() // Sentry is configured during init; only reconfigure when consent state actually changes
             .sink { [bugReportService, analyticsService, appSettings] _ in
-                Self.setupSentry(bugReportService: bugReportService, appSettings: appSettings, analytics: analyticsService)
+                Self.setupSentry(bugReportService: bugReportService, appSettings: appSettings,
+                                 analytics: analyticsService)
             }
             .store(in: &cancellables)
         
@@ -248,7 +252,9 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                                                     message: L10n.dialogConfirmLinkMessage(confirmationParameters.displayString,
                                                                                            confirmationParameters.internalURL.absoluteString),
                                                     primaryButton: .init(title: L10n.actionCancel, role: .cancel, action: nil),
-                                                    secondaryButton: .init(title: L10n.actionContinue) { openURLAction(confirmationParameters.internalURL) })
+                                                    secondaryButton: .init(title: L10n.actionContinue) {
+                                                        openURLAction(confirmationParameters.internalURL)
+                                                    })
         return true
     }
     
@@ -367,13 +373,15 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
     func handleUserActivity(_ userActivity: NSUserActivity) {
         guard let intent = userActivity.interaction?.intent as? INStartCallIntent,
               let contact = intent.contacts?.first,
-              let roomIdentifier = contact.personHandle?.value else {
+              let roomIdentifier = contact.personHandle?.value
+        else {
             MXLog.error("Failed retrieving information from userActivity: \(userActivity)")
             return
         }
         
         MXLog.info("Starting call in room: \(roomIdentifier)")
-        handleAppRoute(AppRoute.call(roomID: roomIdentifier, isVoiceCall: intent.callCapability == .audioCall), windowType: nil)
+        handleAppRoute(AppRoute.call(roomID: roomIdentifier, isVoiceCall: intent.callCapability == .audioCall),
+                       windowType: nil)
     }
     
     // MARK: - AuthenticationFlowCoordinatorDelegate
@@ -424,7 +432,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         MXLog.info("Tapped Notification")
         
         guard let roomID = content.roomID,
-              content.receiverID != nil else {
+              content.receiverID != nil
+        else {
             return
         }
         
@@ -437,7 +446,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
             }
             handleAppRoute(.room(roomID: roomID, via: []), windowType: nil)
         } else if appSettings.threadsEnabled, let threadRootEventID = content.threadRootEventID {
-            handleAppRoute(.thread(roomID: roomID, threadRootEventID: threadRootEventID, focusEventID: eventID), windowType: nil)
+            handleAppRoute(.thread(roomID: roomID, threadRootEventID: threadRootEventID, focusEventID: eventID),
+                           windowType: nil)
         } else if let eventID {
             // Only track main timeline event deeplinking
             analyticsService.signpost.startTransaction(.notificationToMessage)
@@ -530,26 +540,29 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
     
     /// This could be removed once the adoption of 25.06.x is widespread.
     private func performSettingsToAccountDataMigration(userSession: UserSessionProtocol) {
-        guard let userDefaults = UserDefaults(suiteName: InfoPlistReader.main.appGroupIdentifier) else {
+        guard let userDefaults = UserDefaults(suiteName: InfoPlistReader.main.appGroupIdentifier)
+        else {
             return
         }
         
         let hideInviteAvatars = userDefaults.value(forKey: "hideInviteAvatars") as? Bool
-        let timelineMediaVisibility = userDefaults
-            .data(forKey: "timelineMediaVisibility")
-            .flatMap {
-                try? JSONDecoder().decode(TimelineMediaVisibility.self, from: $0)
-            }
+        let timelineMediaVisibility =
+            userDefaults
+                .data(forKey: "timelineMediaVisibility")
+                .flatMap {
+                    try? JSONDecoder().decode(TimelineMediaVisibility.self, from: $0)
+                }
         let hideTimelineMedia = userDefaults.value(forKey: "hideTimelineMedia") as? Bool
         
-        guard hideInviteAvatars != nil || timelineMediaVisibility != nil || hideTimelineMedia != nil else {
+        guard hideInviteAvatars != nil || timelineMediaVisibility != nil || hideTimelineMedia != nil
+        else {
             // No migration needed, no local settings found.
             return
         }
         
         Task {
             switch await userSession.clientProxy.fetchMediaPreviewConfiguration() {
-            case let .success(config):
+            case .success(let config):
                 guard config == nil else {
                     // Found a server configuration, no need to migrate.
                     userDefaults.removeObject(forKey: "hideInviteAvatars")
@@ -558,16 +571,19 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                     return
                 }
                 
-                if let hideInviteAvatars, case .success = await userSession.clientProxy.setHideInviteAvatars(hideInviteAvatars) {
+                if let hideInviteAvatars,
+                   case .success = await userSession.clientProxy.setHideInviteAvatars(hideInviteAvatars) {
                     userDefaults.removeObject(forKey: "hideInviteAvatars")
                 }
                 
-                if let timelineMediaVisibility, case .success = await userSession.clientProxy.setTimelineMediaVisibility(timelineMediaVisibility) {
+                if let timelineMediaVisibility,
+                   case .success = await userSession.clientProxy.setTimelineMediaVisibility(timelineMediaVisibility) {
                     userDefaults.removeObject(forKey: "timelineMediaVisibility")
-                } else if let hideTimelineMedia, case .success = await userSession.clientProxy.setTimelineMediaVisibility(hideTimelineMedia ? .never : .always) {
+                } else if let hideTimelineMedia,
+                          case .success = await userSession.clientProxy.setTimelineMediaVisibility(hideTimelineMedia ? .never : .always) {
                     userDefaults.removeObject(forKey: "hideTimelineMedia")
                 }
-            case let .failure(error):
+            case .failure(let error):
                 MXLog.error("Could not perform migration, failed to fetch media preview config: \(error)")
                 return
             }
@@ -724,7 +740,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         Task { [self] in
             let credentials = SoftLogoutScreenCredentials(userID: userSession.clientProxy.userID,
                                                           homeserverName: userSession.clientProxy.homeserver,
-                                                          userDisplayName: userSession.clientProxy.userProfilePublisher.value.displayName ?? "",
+                                                          userDisplayName: userSession.clientProxy.userProfilePublisher.value.displayName
+                                                              ?? "",
                                                           deviceID: userSession.clientProxy.deviceID)
             
             let authenticationService = AuthenticationService(userSessionStore: userSessionStore,
@@ -968,7 +985,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         }
     }
     
-    private static func setupSentry(bugReportService: BugReportServiceProtocol, appSettings: AppSettings, analytics: AnalyticsServiceProtocol) {
+    private static func setupSentry(bugReportService: BugReportServiceProtocol, appSettings: AppSettings,
+                                    analytics: AnalyticsServiceProtocol) {
         guard let bugReportSentryURL = appSettings.bugReportSentryURL else { return }
         
         let options: Options = .init()
@@ -1051,7 +1069,8 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
             fatalError("User session not setup")
         }
         
-        guard case let .joined(roomProxy) = await userSession.clientProxy.roomForIdentifier(roomID) else {
+        guard case .joined(let roomProxy) = await userSession.clientProxy.roomForIdentifier(roomID)
+        else {
             MXLog.error("Tried to reply in an unjoined room: \(roomID)")
             return
         }
@@ -1121,9 +1140,11 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                 
                 switch state {
                 case .loading:
-                    if self.userSession?.clientProxy.homeserverReachabilityPublisher.value == .reachable,
-                       self.appMediator.networkMonitor.reachabilityPublisher.value == .reachable {
-                        self.userIndicatorController.submitIndicator(.init(id: toastIdentifier, type: .toast(progress: .indeterminate), title: L10n.commonSyncing, persistent: true))
+                    if self.userSession?.clientProxy.homeserverReachabilityPublisher.value
+                        == .reachable,
+                        self.appMediator.networkMonitor.reachabilityPublisher.value == .reachable {
+                        self.userIndicatorController.submitIndicator(.init(id: toastIdentifier, type: .toast(progress: .indeterminate),
+                                                                           title: L10n.commonSyncing, persistent: true))
                     }
                 case .notLoading:
                     self.analyticsService.signpost.finishTransaction(.upToDateRoomList)
