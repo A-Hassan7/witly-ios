@@ -41,6 +41,11 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
     /// `RoomScreenCoordinator` to its existing `shareText(_:)` (replace-draft + focus) — see
     /// `PATCHES.md` for why this reuses that method rather than adding a new composer core seam.
     var onInsertSuggestion: ((String) -> Void)?
+    /// Reads the composer's current plain text, so every generation request — automatic, manual
+    /// regenerate, or the panel's custom-intent field — can send whatever the user already has
+    /// typed as `draft_text` (matching the web client's behaviour: `draft_text` always mirrors the
+    /// live composer draft, not just an explicit panel submission). Wired by `RoomScreenCoordinator`.
+    var composerDraftTextProvider: (() -> String)?
     
     init(roomID: String, timelineController: TimelineControllerProtocol, apiClient: AGChatAPIClient,
          styleControlsStore: WitlyStyleControlsStore) {
@@ -85,18 +90,20 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
     /// Witly panel Suggestions tab: generate using conversation context plus a free-form description
     /// of what the user wants to say (sent as `draft_text` — see `WitlySuggestionsService.generate`).
     /// Also the entry point for the Smart-timing auto-trigger and manual regenerate (both omit
-    /// `customIntent`).
+    /// `customIntent`, in which case whatever's currently typed in the composer is sent instead —
+    /// see `composerDraftTextProvider`).
     func generate(customIntent: String? = nil) {
         generationTask?.cancel()
         state = WitlyRoomSuggestionsState(phase: .generating, suggestions: [])
         
         let context = watcher.recentContext()
         let effectiveStyleControls = styleControlsStore.effectiveValues(forRoom: roomID)
+        let draftText = customIntent ?? composerDraftTextProvider?()
         WitlyLog.info("suggestions: generating for room \(roomID) (context: \(context.count) messages)")
         generationTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let stream = try await service.generate(context: context, roomID: roomID, customIntent: customIntent,
+                let stream = try await service.generate(context: context, roomID: roomID, customIntent: draftText,
                                                         styleControls: effectiveStyleControls)
                 var received: [WitlySuggestion] = []
                 for try await event in stream {

@@ -118,7 +118,9 @@ final class WitlyStyleControlsStore: ObservableObject {
     @discardableResult
     private func persist() async -> Bool {
         let content = Content(global: global, rooms: rooms)
-        guard let data = try? JSONEncoder().encode(content), let json = String(data: data, encoding: .utf8) else {
+        guard let data = try? JSONEncoder().encode(content),
+              let json = String(data: data, encoding: .utf8)
+        else {
             WitlyLog.warning("style controls: failed encoding account data")
             return false
         }

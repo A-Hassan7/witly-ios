@@ -122,6 +122,9 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
                                                                   styleControlsStore: WitlyStyleControlsStore(clientProxy: parameters.userSession.clientProxy))
         
         witlySuggestionsViewModel.onInsertSuggestion = { [weak self] text in self?.shareText(text) }
+        witlySuggestionsViewModel.composerDraftTextProvider = { [weak composerViewModel] in
+            composerViewModel?.context.plainComposerText.string ?? ""
+        }
     }
     
     // MARK: - Public
