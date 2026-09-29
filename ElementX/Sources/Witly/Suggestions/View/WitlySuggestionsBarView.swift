@@ -64,11 +64,18 @@ struct WitlySuggestionsBarView: View {
     /// Idle-state manual trigger — the only way to request a first round of suggestions before any
     /// inbound message has fired the Smart-timing auto-trigger. Shares `onRegenerate` with the
     /// ready/error states' refresh affordances: there's exactly one "give me suggestions now" action,
-    /// available in every phase.
+    /// available in every phase. Styled as a pill (not plain text) so it reads as tappable rather
+    /// than as a caption for `witlyButton`.
     private var suggestButton: some View {
-        Button("Suggest replies", action: onRegenerate)
-            .font(.compound.bodySMSemibold)
-            .foregroundStyle(WitlyBrand.colorScheme.accent)
+        Button(action: onRegenerate) {
+            Text("Suggest replies")
+                .font(.compound.bodySMSemibold)
+                .foregroundStyle(WitlyBrand.colorScheme.accent)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(WitlyBrand.colorScheme.accent.opacity(0.12), in: Capsule())
+        }
+        .buttonStyle(.plain)
     }
     
     private var generatingContent: some View {
