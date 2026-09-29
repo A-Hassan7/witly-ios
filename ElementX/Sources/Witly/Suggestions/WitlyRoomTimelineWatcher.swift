@@ -24,8 +24,10 @@ final class WitlyRoomTimelineWatcher {
     static let debounceInterval: Duration = .seconds(5)
     /// Minimum gap between two auto-fires in the same room.
     static let cooldownInterval: TimeInterval = 30
-    /// How many recent messages to hand the backend as context.
-    static let contextLimit = 40
+    /// How many recent messages to hand the backend as context. Matches the backend's own cap
+    /// (`text_msgs[-100:]` in `backend/app/ai/handlers/suggestions.py`) — raising this further
+    /// would have no effect since the backend would just truncate the extra messages anyway.
+    static let contextLimit = 100
     
     private let timelineController: TimelineControllerProtocol
     
