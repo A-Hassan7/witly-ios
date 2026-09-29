@@ -74,37 +74,60 @@ final class WitlyStyleControlsStore: ObservableObject {
     func enableOverride(forRoom roomID: String) async {
         guard rooms[roomID] == nil else { return }
         rooms[roomID] = [:]
-        await persist()
+        let succeeded = await persist()
+        if !succeeded {
+            rooms[roomID] = nil
+        }
     }
     
     /// Sets one control's global default value.
     func setGlobal(controlID: String, optionID: String) async {
+        let previous = global[controlID]
         global[controlID] = optionID
-        await persist()
+        let succeeded = await persist()
+        if !succeeded {
+            global[controlID] = previous
+        }
     }
     
     /// Sets one control's value for `roomID` only, without touching the global default or other rooms.
     func setRoomOverride(roomID: String, controlID: String, optionID: String) async {
+        let previous = rooms[roomID]?[controlID]
         var override = rooms[roomID] ?? [:]
         override[controlID] = optionID
         rooms[roomID] = override
-        await persist()
+        let succeeded = await persist()
+        if !succeeded {
+            rooms[roomID]?[controlID] = previous
+        }
     }
     
     /// Clears every per-room override for `roomID`, so it goes back to inheriting the global default.
     func resetRoom(_ roomID: String) async {
-        guard rooms[roomID] != nil else { return }
+        guard let previous = rooms[roomID] else { return }
         rooms[roomID] = nil
-        await persist()
+        let succeeded = await persist()
+        if !succeeded {
+            rooms[roomID] = previous
+        }
     }
     
-    private func persist() async {
+    /// Writes the current `global`/`rooms` state to account data. Returns whether it succeeded, so
+    /// callers can roll their optimistic in-memory update back on failure rather than leaving the
+    /// UI (and any subsequent generation request) reflecting a value that was never actually saved.
+    @discardableResult
+    private func persist() async -> Bool {
         let content = Content(global: global, rooms: rooms)
         guard let data = try? JSONEncoder().encode(content), let json = String(data: data, encoding: .utf8) else {
-            return
+            WitlyLog.warning("style controls: failed encoding account data")
+            return false
         }
-        if case .failure(let error) = await clientProxy.setWitlyAccountDataEvent(eventType: Self.accountDataEventType, content: json) {
+        switch await clientProxy.setWitlyAccountDataEvent(eventType: Self.accountDataEventType, content: json) {
+        case .success:
+            return true
+        case .failure(let error):
             WitlyLog.warning("style controls: failed writing account data: \(error)")
+            return false
         }
     }
 }

@@ -35,6 +35,7 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
     private let apiClient: AGChatAPIClient
     private var generationTask: Task<Void, Never>?
     private var styleControlsLoadTask: Task<Void, Never>?
+    private var cancellables = Set<AnyCancellable>()
     
     /// Inserts `text` into the room's composer as an editable draft (never sends). Wired by
     /// `RoomScreenCoordinator` to its existing `shareText(_:)` (replace-draft + focus) — see
@@ -49,6 +50,14 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
         WitlyLog.info("suggestions: watching room \(roomID)")
         watcher = WitlyRoomTimelineWatcher(timelineController: timelineController)
         service = WitlySuggestionsService(apiClient: apiClient)
+        
+        // The Settings tab only observes `self`, not `styleControlsStore` directly — forward its
+        // changes here so a control edit (global, per-room, or override enable/reset) is reflected
+        // immediately without leaving and reopening the tab (a separate ObservableObject's @Published
+        // changes don't otherwise propagate to views observing this one).
+        styleControlsStore.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
         
         watcher.onNewInboundMessage = { [weak self] in
             // Invalidate immediately — don't wait for the debounce to also clear stale cards.
