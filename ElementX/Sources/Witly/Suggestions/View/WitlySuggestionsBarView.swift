@@ -33,7 +33,7 @@ struct WitlySuggestionsBarView: View {
             
             switch state.phase {
             case .idle:
-                EmptyView()
+                suggestButton
             case .generating:
                 generatingContent
             case .streaming, .ready:
@@ -43,15 +43,11 @@ struct WitlySuggestionsBarView: View {
             }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, isCollapsed ? 6 : 8)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .readWidth($availableWidth)
         .background(Color.compound.bgCanvasDefault)
         .animation(.default, value: state)
-    }
-    
-    private var isCollapsed: Bool {
-        state.phase == .idle
     }
     
     private var witlyButton: some View {
@@ -63,6 +59,16 @@ struct WitlySuggestionsBarView: View {
                 .background(WitlyBrand.colorScheme.accent.opacity(0.12), in: Circle())
         }
         .accessibilityLabel("Witly")
+    }
+    
+    /// Idle-state manual trigger — the only way to request a first round of suggestions before any
+    /// inbound message has fired the Smart-timing auto-trigger. Shares `onRegenerate` with the
+    /// ready/error states' refresh affordances: there's exactly one "give me suggestions now" action,
+    /// available in every phase.
+    private var suggestButton: some View {
+        Button("Suggest replies", action: onRegenerate)
+            .font(.compound.bodySMSemibold)
+            .foregroundStyle(WitlyBrand.colorScheme.accent)
     }
     
     private var generatingContent: some View {
