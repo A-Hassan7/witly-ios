@@ -114,7 +114,9 @@ protocol ClientProxyProtocol: AnyObject {
     
     var verificationStatePublisher: CurrentValuePublisher<SessionVerificationState, Never> { get }
     
-    var homeserverReachabilityPublisher: CurrentValuePublisher<HomeserverReachability, Never> { get }
+    var homeserverReachabilityPublisher: CurrentValuePublisher<HomeserverReachability, Never> {
+        get
+    }
     
     var userID: String { get }
     
@@ -131,7 +133,9 @@ protocol ClientProxyProtocol: AnyObject {
     /// We delay fetching this until after the first sync. Nil until then
     var ignoredUsersPublisher: CurrentValuePublisher<[String]?, Never> { get }
     
-    var timelineMediaVisibilityPublisher: CurrentValuePublisher<TimelineMediaVisibility, Never> { get }
+    var timelineMediaVisibilityPublisher: CurrentValuePublisher<TimelineMediaVisibility, Never> {
+        get
+    }
     
     var hideInviteAvatarsPublisher: CurrentValuePublisher<Bool, Never> { get }
     
@@ -270,7 +274,8 @@ protocol ClientProxyProtocol: AnyObject {
     
     func trackRecentlyVisitedRoom(_ roomID: String) async -> Result<Void, ClientProxyError>
     
-    func recentlyVisitedRooms(filter: @Sendable (JoinedRoomProxyProtocol) -> Bool) async -> [JoinedRoomProxyProtocol]
+    func recentlyVisitedRooms(filter: @Sendable (JoinedRoomProxyProtocol) -> Bool) async
+        -> [JoinedRoomProxyProtocol]
     func recentConversationCounterparts() async -> [UserProfile]
     
     // MARK: - Crypto

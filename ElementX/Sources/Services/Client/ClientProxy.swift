@@ -218,7 +218,8 @@ class ClientProxy: ClientProxyProtocol {
         
         // Route media downloads through a content scanner when one has been configured for the server,
         // and expose a proxy for the active scanning of content in the timeline.
-        if let contentScannerURL = appSettings.contentScannerURL.publisher.value, let client = client as? Client {
+        if let contentScannerURL = appSettings.contentScannerURL.publisher.value,
+           let client = client as? Client {
             let scanner = ContentScanner(scannerUrl: contentScannerURL.absoluteString)
             await client.setContentScanner(contentScanner: scanner)
             contentScanner = ContentScannerProxy(contentScanner: scanner, client: client)
@@ -276,11 +277,12 @@ class ClientProxy: ClientProxyProtocol {
         
         try await client.setUtdDelegate(utdDelegate: ClientDecryptionErrorDelegate(actionsSubject: actionsSubject))
         
-        let canSubscribeToUserProfile = if await (try? client.isProfilesSlidingSyncExtensionSupported()) == true {
-            true
-        } else {
-            false
-        }
+        let canSubscribeToUserProfile =
+            if await (try? client.isProfilesSlidingSyncExtensionSupported()) == true {
+                true
+            } else {
+                false
+            }
         
         if !canSubscribeToUserProfile {
             loadUserAvatarURLFromCache()
@@ -513,23 +515,25 @@ class ClientProxy: ClientProxyProtocol {
                     avatarURL: URL?,
                     aliasLocalPart: String?) async -> Result<String, ClientProxyError> {
         do {
-            let powerLevelContentOverride = if isSpace {
-                if accessType == .public {
-                    Self.publicSpaceCreationPowerLevelOverrides
+            let powerLevelContentOverride =
+                if isSpace {
+                    if accessType == .public {
+                        Self.publicSpaceCreationPowerLevelOverrides
+                    } else {
+                        Self.standardSpaceCreationPowerLevelOverrides
+                    }
                 } else {
-                    Self.standardSpaceCreationPowerLevelOverrides
+                    if accessType.isAskToJoin {
+                        Self.knockingRoomCreationPowerLevelOverrides
+                    } else {
+                        Self.roomCreationPowerLevelOverrides
+                    }
                 }
-            } else {
-                if accessType.isAskToJoin {
-                    Self.knockingRoomCreationPowerLevelOverrides
-                } else {
-                    Self.roomCreationPowerLevelOverrides
-                }
-            }
             
             let parameters = CreateRoomParameters(name: name,
                                                   topic: topic,
-                                                  isEncrypted: !appSettings.forceDisableE2EE.publisher.value && accessType.isEncrypted,
+                                                  isEncrypted: !appSettings.forceDisableE2EE.publisher.value
+                                                      && accessType.isEncrypted,
                                                   isDirect: false,
                                                   visibility: accessType.visibility,
                                                   preset: accessType.preset,
@@ -614,7 +618,7 @@ class ClientProxy: ClientProxyProtocol {
     
     func canJoinRoom(with rules: [AllowRule]) -> Bool {
         for rule in rules {
-            if case let .roomMembership(roomID) = rule,
+            if case .roomMembership(let roomID) = rule,
                let room = try? client.getRoom(roomId: roomID),
                room.membership() == .joined {
                 return true
@@ -680,7 +684,9 @@ class ClientProxy: ClientProxyProtocol {
     }
     
     func roomSummaryForAlias(_ alias: String) -> RoomSummary? {
-        staticRoomSummaryProvider.roomListPublisher.value.first { $0.canonicalAlias == alias || $0.alternativeAliases.contains(alias) }
+        staticRoomSummaryProvider.roomListPublisher.value.first {
+            $0.canonicalAlias == alias || $0.alternativeAliases.contains(alias)
+        }
     }
     
     func reportRoomForIdentifier(_ identifier: String, reason: String) async -> Result<Void, ClientProxyError> {
@@ -749,7 +755,7 @@ class ClientProxy: ClientProxyProtocol {
     }
     
     func setUserAvatar(media: MediaInfo) async -> Result<Void, ClientProxyError> {
-        guard case let .image(imageURL, _, _) = media, let mimeType = media.mimeType else {
+        guard case .image(let imageURL, _, _) = media, let mimeType = media.mimeType else {
             MXLog.error("Failed uploading, invalid media: \(media)")
             return .failure(.invalidMedia)
         }
@@ -813,8 +819,10 @@ class ClientProxy: ClientProxyProtocol {
     
     func deactivateAccount(password: String?, eraseData: Bool) async -> Result<Void, ClientProxyError> {
         do {
-            try await client.deactivateAccount(authData: password.map { .password(passwordDetails: .init(identifier: userID, password: $0)) },
-                                               eraseData: eraseData)
+            try await client.deactivateAccount(authData: password.map {
+                .password(passwordDetails: .init(identifier: userID, password: $0))
+            },
+            eraseData: eraseData)
             return .success(())
         } catch {
             return .failure(.sdkError(error))
@@ -970,18 +978,20 @@ class ClientProxy: ClientProxyProtocol {
         }
     }
     
-    func recentlyVisitedRooms(filter: @Sendable (JoinedRoomProxyProtocol) -> Bool) async -> [JoinedRoomProxyProtocol] {
+    func recentlyVisitedRooms(filter: @Sendable (JoinedRoomProxyProtocol) -> Bool) async
+        -> [JoinedRoomProxyProtocol] {
         let maxResultsToReturn = 5
         
-        guard case let .success(roomIdentifiers) = await recentlyVisitedRoomIDs() else {
+        guard case .success(let roomIdentifiers) = await recentlyVisitedRoomIDs() else {
             return []
         }
         
         var rooms: [JoinedRoomProxyProtocol] = []
         
         for roomID in roomIdentifiers {
-            guard case let .joined(roomProxy) = await roomForIdentifier(roomID),
-                  filter(roomProxy) else {
+            guard case .joined(let roomProxy) = await roomForIdentifier(roomID),
+                  filter(roomProxy)
+            else {
                 continue
             }
             
@@ -998,21 +1008,23 @@ class ClientProxy: ClientProxyProtocol {
     func recentConversationCounterparts() async -> [UserProfile] {
         let maxResultsToReturn = 5
         
-        guard case let .success(roomIdentifiers) = await recentlyVisitedRoomIDs() else {
+        guard case .success(let roomIdentifiers) = await recentlyVisitedRoomIDs() else {
             return []
         }
         
         var users: OrderedSet<UserProfile> = []
         
         for roomID in roomIdentifiers {
-            guard case let .joined(roomProxy) = await roomForIdentifier(roomID),
+            guard case .joined(let roomProxy) = await roomForIdentifier(roomID),
                   roomProxy.infoPublisher.value.isDirect,
-                  let members = await roomProxy.members() else {
+                  let members = await roomProxy.members()
+            else {
                 continue
             }
             
             for member in members where member.isActive && member.userID != userID {
-                users.append(.init(userID: member.userID, displayName: member.displayName, avatarURL: member.avatarURL))
+                users.append(.init(userID: member.userID, displayName: member.displayName,
+                                   avatarURL: member.avatarURL))
                 
                 // Return early to avoid unnecessary work
                 if users.count >= maxResultsToReturn {
@@ -1122,7 +1134,8 @@ class ClientProxy: ClientProxyProtocol {
                 
                 // Don't restart the send queue unless the client is meant to be running; doing so while
                 // suspended would generate network activity in the window we paused to keep quiet.
-                if enabled == false, reachability == .reachable, case .running = self?.desiredServiceState {
+                if enabled == false, reachability == .reachable,
+                   case .running = self?.desiredServiceState {
                     MXLog.info("Enabling all send queues")
                     Task {
                         await client.enableAllSendQueues(enable: true)
@@ -1142,7 +1155,10 @@ class ClientProxy: ClientProxyProtocol {
     
     // MARK: - Pausing and resuming
     
-    private enum ServiceState { case running(offline: Bool), suspended }
+    private enum ServiceState {
+        case running(offline: Bool)
+        case suspended
+    }
     
     /// The state the sync service and client *should* be in, updated by ``resumeServices()`` and ``pauseServices()``.
     private var desiredServiceState: ServiceState = .suspended
@@ -1221,14 +1237,15 @@ class ClientProxy: ClientProxyProtocol {
     }
     
     private func updateVerificationState(_ verificationState: VerificationState) async {
-        let verificationState: SessionVerificationState = switch verificationState {
-        case .unknown:
-            .unknown
-        case .unverified:
-            .unverified
-        case .verified:
-            .verified
-        }
+        let verificationState: SessionVerificationState =
+            switch verificationState {
+            case .unknown:
+                .unknown
+            case .unverified:
+                .unverified
+            case .verified:
+                .verified
+            }
         
         // The session verification controller requires the user's identity which
         // isn't available before a keys query response. Use the verification
@@ -1290,13 +1307,14 @@ class ClientProxy: ClientProxyProtocol {
     }
     
     private func updateHomeserverReachability() {
-        let reachability: HomeserverReachability = if case .suspended = desiredServiceState {
-            .suspended
-        } else if syncServiceState == .offline {
-            .unreachable
-        } else {
-            .reachable
-        }
+        let reachability: HomeserverReachability =
+            if case .suspended = desiredServiceState {
+                .suspended
+            } else if syncServiceState == .offline {
+                .unreachable
+            } else {
+                .reachable
+            }
         
         homeserverReachabilitySubject.send(reachability)
     }
@@ -1358,17 +1376,19 @@ class ClientProxy: ClientProxyProtocol {
         })
     }
     
-    private func createRoomListLoadingStateUpdateObserver(_ roomListService: RoomListService) -> TaskHandle {
-        roomListService.syncIndicator(delayBeforeShowingInMs: 1000, delayBeforeHidingInMs: 0, listener: SDKListener.onMainActor { [weak self] state in
-            guard let self else { return }
-            
-            switch state {
-            case .show:
-                loadingStateSubject.send(.loading)
-            case .hide:
-                loadingStateSubject.send(.notLoading)
-            }
-        })
+    private func createRoomListLoadingStateUpdateObserver(_ roomListService: RoomListService)
+        -> TaskHandle {
+        roomListService.syncIndicator(delayBeforeShowingInMs: 1000, delayBeforeHidingInMs: 0,
+                                      listener: SDKListener.onMainActor { [weak self] state in
+                                          guard let self else { return }
+                                          
+                                          switch state {
+                                          case .show:
+                                              loadingStateSubject.send(.loading)
+                                          case .hide:
+                                              loadingStateSubject.send(.notLoading)
+                                          }
+                                      })
     }
     
     private func buildRoomForIdentifier(_ roomID: String) async -> RoomProxyType? {
@@ -1446,7 +1466,9 @@ class ClientProxy: ClientProxyProtocol {
         MXLog.info("Pinning current identity for user: \(userID)")
         
         do {
-            guard let userIdentity = try await client.encryption().userIdentity(userId: userID, fallbackToServer: true) else {
+            guard
+                let userIdentity = try await client.encryption().userIdentity(userId: userID, fallbackToServer: true)
+            else {
                 MXLog.error("Failed retrieving identity for user: \(userID)")
                 return .failure(.failedRetrievingUserIdentity)
             }
@@ -1462,7 +1484,9 @@ class ClientProxy: ClientProxyProtocol {
         MXLog.info("Withdrawing current identity verification for user: \(userID)")
         
         do {
-            guard let userIdentity = try await client.encryption().userIdentity(userId: userID, fallbackToServer: true) else {
+            guard
+                let userIdentity = try await client.encryption().userIdentity(userId: userID, fallbackToServer: true)
+            else {
                 MXLog.error("Failed retrieving identity for user: \(userID)")
                 return .failure(.failedRetrievingUserIdentity)
             }
@@ -1484,7 +1508,8 @@ class ClientProxy: ClientProxyProtocol {
     
     func userIdentity(for userID: String, fallBackToServer: Bool) async -> Result<UserIdentityProxyProtocol?, ClientProxyError> {
         do {
-            return try await .success(client.encryption().userIdentity(userId: userID, fallbackToServer: fallBackToServer).map(UserIdentityProxy.init))
+            return try await .success(client.encryption().userIdentity(userId: userID, fallbackToServer: fallBackToServer)
+                .map(UserIdentityProxy.init))
         } catch {
             MXLog.error("Failed retrieving user identity: \(error)")
             return .failure(.sdkError(error))
@@ -1494,10 +1519,12 @@ class ClientProxy: ClientProxyProtocol {
 
 private final class ClientDelegateWrapper: ClientDelegate {
     private let authErrorCallback: @Sendable (Bool) -> Void
-    private let backgroundTaskErrorCallback: @Sendable (MatrixRustSDK.BackgroundTaskFailureReason) -> Void
+    private let backgroundTaskErrorCallback:
+        @Sendable (MatrixRustSDK.BackgroundTaskFailureReason) -> Void
     
     init(authErrorCallback: @escaping @Sendable (Bool) -> Void,
-         backgroundTaskErrorCallback: @escaping @Sendable (MatrixRustSDK.BackgroundTaskFailureReason) -> Void) {
+         backgroundTaskErrorCallback:
+         @escaping @Sendable (MatrixRustSDK.BackgroundTaskFailureReason) -> Void) {
         self.authErrorCallback = authErrorCallback
         self.backgroundTaskErrorCallback = backgroundTaskErrorCallback
     }
@@ -1542,11 +1569,12 @@ private struct ClientProxyServices {
     init(client: ClientProtocol,
          notificationSettings: NotificationSettingsProxyProtocol,
          appSettings: AppSettings) async throws {
-        let syncService = try await client
-            .syncService()
-            .withOfflineMode()
-            .withSharePos(enable: true)
-            .finish()
+        let syncService =
+            try await client
+                .syncService()
+                .withOfflineMode()
+                .withSharePos(enable: true)
+                .finish()
         
         let roomListService = syncService.roomListService()
         

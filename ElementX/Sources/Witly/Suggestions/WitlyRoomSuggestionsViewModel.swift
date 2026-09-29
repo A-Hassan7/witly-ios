@@ -142,7 +142,9 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
             await styleControlsStore.loadIfNeeded()
             do {
                 let catalog = try await apiClient.getCatalog()
-                let prompt = catalog.prompts.first { $0.feature == "suggestions/me_wittier" && $0.isDefault }
+                let prompt = catalog.prompts.first {
+                    $0.feature == "suggestions/me_wittier" && $0.isDefault
+                }
                 styleControls = prompt?.styleControls ?? []
             } catch {
                 WitlyLog.warning("suggestions: failed loading style controls: \(type(of: error))")
@@ -171,7 +173,9 @@ final class WitlyRoomSuggestionsViewModel: ObservableObject {
     }
     
     func setRoomStyleValue(controlID: String, optionID: String) {
-        Task { await styleControlsStore.setRoomOverride(roomID: roomID, controlID: controlID, optionID: optionID) }
+        Task {
+            await styleControlsStore.setRoomOverride(roomID: roomID, controlID: controlID, optionID: optionID)
+        }
     }
     
     /// "Use global default" — clears every per-room override for this room in one step.
