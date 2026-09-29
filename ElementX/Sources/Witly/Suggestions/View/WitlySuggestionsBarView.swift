@@ -179,13 +179,7 @@ private struct WitlySuggestionChip: View {
                 // Stretch to the row's height (the tallest sibling card) so every card is the same
                 // height; `.leading` centres vertically while keeping the text left-aligned.
                 .frame(maxHeight: .infinity, alignment: .leading)
-                // Not bgSubtleSecondaryLevel0: it's identical to bgCanvasDefault in dark mode
-                // (#101317 == #101317), which made adjacent cards indistinguishable from each other
-                // and from the bar's own background. bgSubtlePrimary is genuinely distinct in both
-                // appearances; the border adds definition between cards regardless of theme.
-                .background(Color.compound.bgSubtlePrimary, in: RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color.compound.borderInteractiveSecondary, lineWidth: 0.5))
+                .witlySuggestionCardBackground()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(suggestion.text))

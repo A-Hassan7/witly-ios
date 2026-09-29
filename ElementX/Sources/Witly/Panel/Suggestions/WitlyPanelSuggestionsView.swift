@@ -70,7 +70,7 @@ struct WitlyPanelSuggestionsView: View {
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(Color.compound.bgSubtleSecondaryLevel0, in: RoundedRectangle(cornerRadius: 12))
+                .witlySuggestionCardBackground(cornerRadius: 12)
         }
         .buttonStyle(.plain)
         .accessibilityHint("Insert as a draft in the composer")
@@ -99,7 +99,8 @@ struct WitlyPanelSuggestionsView: View {
             Button(action: submitIntent) {
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 30))
-                    .foregroundStyle(canSubmitIntent ? WitlyBrand.colorScheme.accent : Color.compound.iconDisabled)
+                    .foregroundStyle(canSubmitIntent
+                        ? WitlyBrand.colorScheme.accent : Color.compound.iconDisabled)
             }
             .disabled(!canSubmitIntent)
         }
