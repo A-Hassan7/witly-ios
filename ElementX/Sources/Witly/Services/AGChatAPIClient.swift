@@ -275,10 +275,10 @@ nonisolated struct AGChatAPIClient: Sendable {
     }
     
     /// Submit data for the current step and advance the flow. `data: [:]` for `display_and_wait`, which
-    /// long-polls server-side for up to 180s until the user completes the action on their device.
+    /// long-polls server-side for up to 230s until the user completes the action on their device.
     func submitBridgeLoginStep(service: BridgeService, loginId: String, stepId: String, stepType: String,
                                data: [String: String]) async throws -> LoginStep {
-        let timeout: TimeInterval = stepType == "display_and_wait" ? 185 : 30
+        let timeout: TimeInterval = stepType == "display_and_wait" ? 235 : 30
         return try await request("/bridges/\(service.rawValue)/login/\(loginId)/step", method: "POST",
                                  body: ["step_id": stepId, "step_type": stepType, "data": data] as [String: Any],
                                  timeout: timeout)
