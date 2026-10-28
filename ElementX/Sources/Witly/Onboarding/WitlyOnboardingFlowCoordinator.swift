@@ -99,11 +99,36 @@ final class WitlyOnboardingFlowCoordinator: FlowCoordinatorProtocol {
         beginProvisioning()
         
         Task {
+            // Re-login (e.g. after signing out) re-provisions the *same* homeserver and leaves any
+            // previously connected bridge in place server-side — the user already did platform
+            // setup, so don't make them repeat it. Checked here rather than inside
+            // WitlyOnboardingConnectCoordinator's own flow since skipping must bypass presenting it
+            // at all, not just skip a step within it.
+            if await hasConnectedBridge() {
+                WitlyLog.info("Existing connected bridge found — skipping the platform connect step")
+                finishOnboarding()
+                return
+            }
+            
             if await isProvisioningLikelyReady() {
                 presentConnect()
             } else {
                 presentAccountSetup()
             }
+        }
+    }
+    
+    /// True only when the bridge has actually completed a login before (`login_status == CONNECTED`).
+    /// Any other state — no bridge yet, still deploying, mid-login, logged out, or the status call
+    /// itself failing (network error, 404 for a first-time user, etc.) — falls back to showing the
+    /// connect step as normal, so this can only ever skip a genuinely redundant setup, never hide a
+    /// real failure.
+    private func hasConnectedBridge() async -> Bool {
+        do {
+            let status = try await apiClient.bridgeStatus(service: .whatsapp)
+            return status.loginStatus == "CONNECTED"
+        } catch {
+            return false
         }
     }
     
