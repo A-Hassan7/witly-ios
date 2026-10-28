@@ -158,7 +158,8 @@ class TimelineTableViewController: UIViewController {
     }
     
     /// The table's diffable data source.
-    private var dataSource: UITableViewDiffableDataSource<TimelineSection, TimelineItemIdentifier.UniqueID>?
+    private var dataSource:
+        UITableViewDiffableDataSource<TimelineSection, TimelineItemIdentifier.UniqueID>?
     private var cancellables = Set<AnyCancellable>()
     
     /// A publisher used to throttle back pagination requests.
@@ -192,11 +193,17 @@ class TimelineTableViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         
         tableView.register(TimelineItemCell.self, forCellReuseIdentifier: TimelineItemCell.reuseIdentifier)
-        tableView.register(TimelineTypingIndicatorCell.self, forCellReuseIdentifier: TimelineTypingIndicatorCell.reuseIdentifier)
+        tableView.register(TimelineTypingIndicatorCell.self,
+                           forCellReuseIdentifier: TimelineTypingIndicatorCell.reuseIdentifier)
         tableView.separatorStyle = .none
         tableView.allowsSelection = false
         tableView.keyboardDismissMode = .onDrag
-        tableView.backgroundColor = .compound.bgCanvasDefault
+        // Background is rendered via Witly's theme (color/gradient/pattern) — see applyWitlyRoomBackground().
+        tableView.backgroundColor = .clear
+        applyWitlyRoomBackground()
+        NotificationCenter.default.publisher(for: .witlyThemeDidChange)
+            .sink { [weak self] _ in self?.applyWitlyRoomBackground() }
+            .store(in: &cancellables)
         
         // The tableview is flipped to display the newest items at the bottom.
         tableView.transform = CGAffineTransform(scaleX: 1, y: -1)
@@ -306,7 +313,8 @@ class TimelineTableViewController: UIViewController {
                     return cell
                 }
                 
-                cell.contentConfiguration = UIHostingConfiguration { [coordinator, hideTimelineMedia] in
+                cell.contentConfiguration = UIHostingConfiguration {
+                    [coordinator, hideTimelineMedia] in
                     RoomTimelineItemView(viewState: viewState)
                         .id(id)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -350,7 +358,9 @@ class TimelineTableViewController: UIViewController {
         // We don't want to display the typing notification in this timeline
         if coordinator.context.viewState.timelineKind != .pinned {
             snapshot.appendSections([.typingIndicator])
-            snapshot.appendItems([TimelineItemIdentifier.UniqueID(TimelineTypingIndicatorCell.reuseIdentifier)])
+            snapshot.appendItems([
+                TimelineItemIdentifier.UniqueID(TimelineTypingIndicatorCell.reuseIdentifier)
+            ])
         }
         snapshot.appendSections([.main])
         snapshot.appendItems(timelineItemsIDs)
@@ -360,14 +370,17 @@ class TimelineTableViewController: UIViewController {
         // We only animate when new items come at the end of a live timeline, ignoring transitions through empty.
         let newestItemIdentifier = snapshot.mainItemIdentifiers.first
         let currentNewestItemIdentifier = currentSnapshot.mainItemIdentifiers.first
-        let newestItemIDChanged = snapshot.numberOfMainItems > 0 && currentSnapshot.numberOfMainItems > 0 && newestItemIdentifier != currentNewestItemIdentifier
+        let newestItemIDChanged =
+            snapshot.numberOfMainItems > 0 && currentSnapshot.numberOfMainItems > 0
+                && newestItemIdentifier != currentNewestItemIdentifier
         let animated = isLive && !isSwitchingTimelines && newestItemIDChanged
         
-        let layout: Layout? = if !isLive, newestItemIDChanged {
-            snapshotLayout()
-        } else {
-            nil
-        }
+        let layout: Layout? =
+            if !isLive, newestItemIDChanged {
+                snapshotLayout()
+            } else {
+                nil
+            }
         
         dataSource.apply(snapshot, animatingDifferences: animated)
         
@@ -406,10 +419,12 @@ class TimelineTableViewController: UIViewController {
         // The data source can lag behind timelineItemsIDs, so scroll against the table's actual
         // contents to avoid targeting a section or row that doesn't exist yet.
         guard tableView.numberOfSections > 1,
-              tableView.numberOfRows(inSection: 1) > 0 else {
+              tableView.numberOfRows(inSection: 1) > 0
+        else {
             return
         }
-        tableView.scrollToRow(at: IndexPath(item: tableView.numberOfRows(inSection: 1) - 1, section: 1), at: .bottom, animated: animated)
+        tableView.scrollToRow(at: IndexPath(item: tableView.numberOfRows(inSection: 1) - 1, section: 1), at: .bottom,
+                              animated: animated)
         scrollDirectionPublisher.send(.top)
     }
     
@@ -427,8 +442,10 @@ class TimelineTableViewController: UIViewController {
     private func scrollToItem(eventID: String, animated: Bool) {
         DispatchQueue.main.async { [weak self] in // Fixes #2805
             guard let self else { return }
-            if let kvPair = timelineItemsDictionary.first(where: { $0.value.identifier.eventID == eventID }),
-               let indexPath = dataSource?.indexPath(for: kvPair.key) {
+            if let kvPair = timelineItemsDictionary.first(where: {
+                $0.value.identifier.eventID == eventID
+            }),
+                let indexPath = dataSource?.indexPath(for: kvPair.key) {
                 // Scrolling to the middle created a small bump in the timeline
                 // Using top, which is bottom in the reversed timeline helps with rendering
                 // in full long messages and images
@@ -444,6 +461,13 @@ class TimelineTableViewController: UIViewController {
         }
     }
     
+    /// Re-renders the timeline's background to match the active Witly theme; re-invoked whenever the
+    /// theme changes (see the `.witlyThemeDidChange` subscription in `init`).
+    private func applyWitlyRoomBackground() {
+        tableView.backgroundView = WitlyThemeStore.shared.current.roomBackground
+            .makeBackgroundView()
+    }
+    
     /// Checks whether or not pagination is needed in either direction and requests one if so.
     ///
     /// **Note:** Prefer not to call this directly, instead using ``paginatePublisher`` to throttle requests.
@@ -451,7 +475,8 @@ class TimelineTableViewController: UIViewController {
         guard !hasPendingItems else { return }
         
         if paginationState.backward == .idle,
-           tableView.contentOffset.y > tableView.contentSize.height - tableView.visibleSize.height * 2.0 {
+           tableView.contentOffset.y > tableView.contentSize.height - tableView.visibleSize.height
+           * 2.0 {
             coordinator.send(viewAction: .paginateBackwards)
         }
         if !isLive,
@@ -471,7 +496,8 @@ class TimelineTableViewController: UIViewController {
             guard let readMarkerUniqueID,
                   let readMarkerIndexPath = dataSource?.indexPath(for: readMarkerUniqueID),
                   let visibleIndexPaths = tableView.indexPathsForVisibleRows,
-                  let maxVisibleIndexPath = visibleIndexPaths.max() else {
+                  let maxVisibleIndexPath = visibleIndexPaths.max()
+            else {
                 return false
             }
             return readMarkerIndexPath <= maxVisibleIndexPath
@@ -620,7 +646,8 @@ extension TimelineTableViewController {
     /// actually the *last* index path in `indexPathsForVisibleRows`.
     private func newestVisibleDate() -> Date? {
         guard let visibleIndexPaths = tableView.indexPathsForVisibleRows,
-              !visibleIndexPaths.isEmpty else {
+              !visibleIndexPaths.isEmpty
+        else {
             return nil
         }
         
@@ -657,7 +684,8 @@ extension TimelineTableViewController {
     /// The current layout of the table, based on the newest timeline item.
     private func snapshotLayout() -> Layout? {
         guard let newestItemID = newestVisibleItemID(),
-              let newestCellFrame = cellFrame(for: newestItemID.uniqueID) else {
+              let newestCellFrame = cellFrame(for: newestItemID.uniqueID)
+        else {
             return nil
         }
         return Layout(id: newestItemID, frame: newestCellFrame)
@@ -681,7 +709,11 @@ extension TimelineTableViewController {
     
     /// Returns the frame of the cell for a particular timeline item.
     private func cellFrame(for uniqueID: TimelineItemIdentifier.UniqueID) -> CGRect? {
-        guard let timelineCell = tableView.visibleCells.first(where: { ($0 as? TimelineItemCell)?.item?.identifier.uniqueID == uniqueID }) else {
+        guard
+            let timelineCell = tableView.visibleCells.first(where: {
+                ($0 as? TimelineItemCell)?.item?.identifier.uniqueID == uniqueID
+            })
+        else {
             return nil
         }
         
@@ -690,10 +722,12 @@ extension TimelineTableViewController {
     
     /// The item ID of the newest visible item in the timeline.
     private func newestVisibleItemID() -> TimelineItemIdentifier? {
-        guard let timelineCell = tableView.visibleCells.first(where: {
-            guard let cell = $0 as? TimelineItemCell else { return false }
-            return !(cell.item?.type is PaginationIndicatorRoomTimelineItem)
-        }) else {
+        guard
+            let timelineCell = tableView.visibleCells.first(where: {
+                guard let cell = $0 as? TimelineItemCell else { return false }
+                return !(cell.item?.type is PaginationIndicatorRoomTimelineItem)
+            })
+        else {
             return nil
         }
         return (timelineCell as? TimelineItemCell)?.item?.identifier
