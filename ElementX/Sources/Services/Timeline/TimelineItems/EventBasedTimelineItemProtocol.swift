@@ -9,7 +9,8 @@
 import Foundation
 import UIKit
 
-nonisolated protocol EventBasedTimelineItemProtocol: RoomTimelineItemProtocol, CustomStringConvertible {
+nonisolated protocol EventBasedTimelineItemProtocol: RoomTimelineItemProtocol,
+    CustomStringConvertible {
     var timestamp: Date { get }
     var isOutgoing: Bool { get }
     var isEditable: Bool { get }
@@ -28,7 +29,8 @@ nonisolated extension EventBasedTimelineItemProtocol {
     }
     
     var isForwardable: Bool {
-        isRemoteMessage && !(self is PollRoomTimelineItem) && !(self is LiveLocationRoomTimelineItem)
+        isRemoteMessage && !(self is PollRoomTimelineItem)
+            && !(self is LiveLocationRoomTimelineItem)
     }
     
     /// Whether the item can be part of a multi-selection of messages.
@@ -54,7 +56,8 @@ nonisolated extension EventBasedTimelineItemProtocol {
     }
     
     var hasStatusIcon: Bool {
-        hasFailedToSend || properties.encryptionAuthenticity != nil || properties.encryptionForwarder != nil
+        hasFailedToSend || witlyVisibleEncryptionAuthenticity != nil
+            || properties.encryptionForwarder != nil
     }
     
     var hasFailedToSend: Bool {
@@ -121,12 +124,16 @@ nonisolated extension EventBasedTimelineItemProtocol {
     }
     
     var supportsMediaCaption: Bool {
-        guard let messageBasedItem = self as? EventBasedMessageTimelineItemProtocol else { return false }
+        guard let messageBasedItem = self as? EventBasedMessageTimelineItemProtocol else {
+            return false
+        }
         return messageBasedItem.supportsMediaCaption
     }
     
     var hasMediaCaption: Bool {
-        guard let messageBasedItem = self as? EventBasedMessageTimelineItemProtocol else { return false }
+        guard let messageBasedItem = self as? EventBasedMessageTimelineItemProtocol else {
+            return false
+        }
         return messageBasedItem.hasMediaCaption
     }
 }

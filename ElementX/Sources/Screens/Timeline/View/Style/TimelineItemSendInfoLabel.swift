@@ -162,50 +162,53 @@ private extension TimelineItemSendInfo {
         itemID = timelineItem.id
         localizedString = timelineItem.localizedSendInfo
         
-        status = if case .sendingFailed = adjustedDeliveryStatus {
-            .sendingFailed
-        } else if let authenticity = timelineItem.properties.encryptionAuthenticity {
-            .encryptionAuthenticity(authenticity)
-        } else if let forwarder = timelineItem.properties.encryptionForwarder {
-            .encryptionForwarder(forwarder)
-        } else {
-            nil
-        }
+        status =
+            if case .sendingFailed = adjustedDeliveryStatus {
+                .sendingFailed
+            } else if let authenticity = timelineItem.witlyVisibleEncryptionAuthenticity {
+                .encryptionAuthenticity(authenticity)
+            } else if let forwarder = timelineItem.properties.encryptionForwarder {
+                .encryptionForwarder(forwarder)
+            } else {
+                nil
+            }
         
-        layoutType = if hasContentScanningFailure {
-            // The content scanner failure placeholder replaces the media,
-            // so the send info is laid out like it is for a text message.
-            timelineItem.hasMediaCaption ? .overlay(capsuleStyle: false) : .horizontal()
-        } else {
-            switch timelineItem {
-            case is TextBasedRoomTimelineItem:
-                .overlay(capsuleStyle: false)
-            case let liveLocationTimelineItem as LiveLocationRoomTimelineItem:
-                liveLocationTimelineItem.layout
-            case let message as EventBasedMessageTimelineItemProtocol:
-                switch message {
-                case is ImageRoomTimelineItem, is VideoRoomTimelineItem:
-                    .overlay(capsuleStyle: !message.hasMediaCaption)
-                case is GalleryRoomTimelineItem:
-                    // Without a caption, append the send info below the grid rather than overlaying
-                    // a capsule on top of the media.
-                    message.hasMediaCaption ? .overlay(capsuleStyle: false) : .vertical()
-                case is AudioRoomTimelineItem, is FileRoomTimelineItem:
-                    // swiftlint:disable:next void_function_in_ternary
-                    message.hasMediaCaption ? .overlay(capsuleStyle: false) : .horizontal(spacing: 0) // No spacing as the content already contains it.
-                case let locationTimelineItem as LocationRoomTimelineItem:
-                    .overlay(capsuleStyle: locationTimelineItem.content.geoURI != nil)
+        layoutType =
+            if hasContentScanningFailure {
+                // The content scanner failure placeholder replaces the media,
+                // so the send info is laid out like it is for a text message.
+                timelineItem.hasMediaCaption ? .overlay(capsuleStyle: false) : .horizontal()
+            } else {
+                switch timelineItem {
+                case is TextBasedRoomTimelineItem:
+                    .overlay(capsuleStyle: false)
+                case let liveLocationTimelineItem as LiveLocationRoomTimelineItem:
+                    liveLocationTimelineItem.layout
+                case let message as EventBasedMessageTimelineItemProtocol:
+                    switch message {
+                    case is ImageRoomTimelineItem, is VideoRoomTimelineItem:
+                        .overlay(capsuleStyle: !message.hasMediaCaption)
+                    case is GalleryRoomTimelineItem:
+                        // Without a caption, append the send info below the grid rather than overlaying
+                        // a capsule on top of the media.
+                        message.hasMediaCaption ? .overlay(capsuleStyle: false) : .vertical()
+                    case is AudioRoomTimelineItem, is FileRoomTimelineItem:
+                        // swiftlint:disable:next void_function_in_ternary
+                        message.hasMediaCaption
+                            ? .overlay(capsuleStyle: false) : .horizontal(spacing: 0) // No spacing as the content already contains it.
+                    case let locationTimelineItem as LocationRoomTimelineItem:
+                        .overlay(capsuleStyle: locationTimelineItem.content.geoURI != nil)
+                    default:
+                        .horizontal()
+                    }
+                case is StickerRoomTimelineItem:
+                    .overlay(capsuleStyle: true)
+                case is PollRoomTimelineItem:
+                    .vertical(spacing: 16)
                 default:
                     .horizontal()
                 }
-            case is StickerRoomTimelineItem:
-                .overlay(capsuleStyle: true)
-            case is PollRoomTimelineItem:
-                .vertical(spacing: 16)
-            default:
-                .horizontal()
             }
-        }
     }
 }
 

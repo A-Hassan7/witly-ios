@@ -65,7 +65,8 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
         
         super.init(initialViewState: ComposerToolbarViewState(wysiwygViewModel: wysiwygViewModel,
                                                               isRoomEncrypted: roomProxy.infoPublisher.value.isEncrypted,
-                                                              isLocationSharingEnabled: appSettings.mapTilerConfiguration.publisher.value.isEnabled,
+                                                              isLocationSharingEnabled: appSettings.mapTilerConfiguration.publisher.value
+                                                                  .isEnabled,
                                                               bindings: .init()),
                    mediaProvider: mediaProvider)
         
@@ -94,7 +95,8 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
         context.$viewState
             .map(\.bindings.composerFocused)
             .removeDuplicates()
-            .sink { [weak self] in self?.actionsSubject.send(.composerFocusedChanged(isFocused: $0)) }
+            .sink { [weak self] in self?.actionsSubject.send(.composerFocusedChanged(isFocused: $0))
+            }
             .store(in: &cancellables)
         
         wysiwygViewModel.$isContentEmpty
@@ -158,7 +160,8 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
         }
         .store(in: &cancellables)
         
-        NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification).sink { [weak self] _ in
+        NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification).sink {
+            [weak self] _ in
             self?.saveDraft()
         }
         .store(in: &cancellables)
@@ -196,7 +199,8 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                     actionsSubject.send(.sendMessage(plain: wysiwygViewModel.content.markdown,
                                                      html: wysiwygViewModel.content.html,
                                                      mode: state.composerMode,
-                                                     intentionalMentions: wysiwygViewModel.getMentionsState().toIntentionalMentions()))
+                                                     intentionalMentions: wysiwygViewModel.getMentionsState()
+                                                         .toIntentionalMentions()))
                 } else {
                     sendPlainComposerText()
                 }
@@ -234,9 +238,11 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
         case .voiceMessage(let voiceMessageAction):
             processVoiceMessageAction(voiceMessageAction)
         case .plainComposerTextChanged:
-            completionSuggestionService.processTextMessage(state.bindings.plainComposerText.string, selectedRange: context.viewState.bindings.selectedRange)
+            completionSuggestionService.processTextMessage(state.bindings.plainComposerText.string,
+                                                           selectedRange: context.viewState.bindings.selectedRange)
         case .selectedTextChanged:
-            completionSuggestionService.processTextMessage(state.bindings.plainComposerText.string, selectedRange: context.viewState.bindings.selectedRange)
+            completionSuggestionService.processTextMessage(state.bindings.plainComposerText.string,
+                                                           selectedRange: context.viewState.bindings.selectedRange)
         case .didToggleFormattingOptions:
             if context.composerFormattingEnabled {
                 guard !context.plainComposerText.string.isEmpty else {
@@ -254,7 +260,7 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
     
     func process(timelineAction: TimelineComposerAction) {
         switch timelineAction {
-        case .setMode(mode: let mode):
+        case .setMode(let mode):
             if state.composerMode.isComposingNewMessage, mode.isEdit {
                 handleSaveDraft(isVolatile: true)
             }
@@ -286,8 +292,9 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
             set(mode: .default)
             state.bindings.composerFocused = true
         } else {
-            guard case let .success(draft) = await draftService.loadDraft(),
-                  let draft else {
+            guard case .success(let draft) = await draftService.loadDraft(),
+                  let draft
+            else {
                 return
             }
             handleLoadDraft(draft)
@@ -319,12 +326,14 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
         case .reply(let eventID):
             set(mode: .reply(eventID: eventID, replyDetails: .loading(eventID: eventID), isThread: false))
             replyLoadingTask = Task {
-                let reply = switch await draftService.getReply(eventID: eventID) {
-                case .success(let reply):
-                    reply
-                case .failure:
-                    TimelineItemReply(details: .error(eventID: eventID, message: L10n.commonSomethingWentWrong), isThreaded: false)
-                }
+                let reply =
+                    switch await draftService.getReply(eventID: eventID) {
+                    case .success(let reply):
+                        reply
+                    case .failure:
+                        TimelineItemReply(details: .error(eventID: eventID, message: L10n.commonSomethingWentWrong),
+                                          isThreaded: false)
+                    }
                 
                 guard !Task.isCancelled else {
                     return
@@ -428,7 +437,8 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
         
         repeat {
             shouldMakeAnotherPass = false
-            attributedString.enumerateAttribute(.MatrixAllUsersMention, in: .init(location: 0, length: attributedString.length), options: []) { value, range, stop in
+            attributedString.enumerateAttribute(.MatrixAllUsersMention, in: .init(location: 0, length: attributedString.length),
+                                                options: []) { value, range, stop in
                 guard value != nil else { return }
                 
                 shouldMakeAnotherPass = true
@@ -443,14 +453,16 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
             }
         } while shouldMakeAnotherPass
         
-        return .init(text: attributedString.string, mentionedUserIDs: userIDs, containsAtRoomMention: containsAtRoom)
+        return .init(text: attributedString.string, mentionedUserIDs: userIDs,
+                     containsAtRoomMention: containsAtRoom)
     }
     
     private func sendPlainComposerText() {
         let plainComposerContent = plainComposerContent
         actionsSubject.send(.sendMessage(plain: plainComposerContent.text, html: nil,
                                          mode: state.composerMode,
-                                         intentionalMentions: .init(userIDs: plainComposerContent.mentionedUserIDs, atRoom: plainComposerContent.containsAtRoomMention)))
+                                         intentionalMentions: .init(userIDs: plainComposerContent.mentionedUserIDs,
+                                                                    atRoom: plainComposerContent.containsAtRoomMention)))
     }
     
     private func processVoiceMessageAction(_ action: ComposerToolbarVoiceMessageAction) {
@@ -480,7 +492,8 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
     private func setupMentionsHandling(mentionDisplayHelper: MentionDisplayHelper) {
         wysiwygViewModel.mentionDisplayHelper = mentionDisplayHelper
         
-        wysiwygViewModel.mentionReplacer = ComposerMentionReplacer { [weak self] urlString, string in
+        wysiwygViewModel.mentionReplacer = ComposerMentionReplacer {
+            [weak self] urlString, string in
             guard let self else {
                 return NSMutableAttributedString(string: string)
             }
@@ -503,7 +516,7 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
     
     private func handleSuggestion(_ suggestion: SuggestionItem) {
         switch suggestion.suggestionType {
-        case let .user(user):
+        case .user(let user):
             guard let url = try? URL(string: matrixToUserPermalink(userId: user.id)) else {
                 MXLog.error("Could not build user permalink")
                 return
@@ -513,10 +526,12 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                 wysiwygViewModel.setMention(url: url.absoluteString, name: user.id, mentionType: .user)
             } else {
                 let attributedString = NSMutableAttributedString(attributedString: state.bindings.plainComposerText)
-                mentionBuilder.handleUserMention(for: attributedString, in: suggestion.range, url: url, userID: user.id, userDisplayName: user.displayName)
+                mentionBuilder.handleUserMention(for: attributedString, in: suggestion.range, url: url, userID: user.id,
+                                                 userDisplayName: user.displayName)
                 state.bindings.plainComposerText = attributedString
                 
-                let newSelectedRange = NSRange(location: state.bindings.selectedRange.location - suggestion.rawSuggestionText.count, length: 0)
+                let newSelectedRange = NSRange(location: state.bindings.selectedRange.location
+                    - suggestion.rawSuggestionText.count, length: 0)
                 state.bindings.selectedRange = newSelectedRange
             }
         case .allUsers:
@@ -527,11 +542,14 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                 mentionBuilder.handleAllUsersMention(for: attributedString, in: suggestion.range)
                 state.bindings.plainComposerText = attributedString
                 
-                let newSelectedRange = NSRange(location: state.bindings.selectedRange.location - suggestion.rawSuggestionText.count, length: 0)
+                let newSelectedRange = NSRange(location: state.bindings.selectedRange.location
+                    - suggestion.rawSuggestionText.count, length: 0)
                 state.bindings.selectedRange = newSelectedRange
             }
-        case let .room(room):
-            guard let url = try? URL(string: matrixToRoomAliasPermalink(roomAlias: room.canonicalAlias)) else {
+        case .room(let room):
+            guard
+                let url = try? URL(string: matrixToRoomAliasPermalink(roomAlias: room.canonicalAlias))
+            else {
                 MXLog.error("Could not build alias permalink")
                 return
             }
@@ -540,10 +558,12 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                 wysiwygViewModel.setMention(url: url.absoluteString, name: room.name, mentionType: .room)
             } else {
                 let attributedString = NSMutableAttributedString(attributedString: state.bindings.plainComposerText)
-                mentionBuilder.handleRoomAliasMention(for: attributedString, in: suggestion.range, url: url, roomAlias: room.canonicalAlias, roomDisplayName: room.name)
+                mentionBuilder.handleRoomAliasMention(for: attributedString, in: suggestion.range, url: url,
+                                                      roomAlias: room.canonicalAlias, roomDisplayName: room.name)
                 state.bindings.plainComposerText = attributedString
                 
-                let newSelectedRange = NSRange(location: state.bindings.selectedRange.location - suggestion.rawSuggestionText.count, length: 0)
+                let newSelectedRange = NSRange(location: state.bindings.selectedRange.location
+                    - suggestion.rawSuggestionText.count, length: 0)
                 state.bindings.selectedRange = newSelectedRange
             }
         }
@@ -551,9 +571,17 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
     
     private func processIdentityStatusChanges(_ changes: [IdentityStatusChange]) async {
         for change in changes {
+            // Bridge ghosts never have a genuine cross-signing identity, so a reported violation for
+            // one isn't a real security concern — must not block sending in bridged rooms.
+            guard !WitlyBridgeIdentity.isBridgeGhost(userID: change.userId) else {
+                identityPinningViolations[change.userId] = nil
+                continue
+            }
+            
             switch change.changedTo {
             case .verificationViolation:
-                guard case let .success(member) = await roomProxy.getMember(userID: change.userId) else {
+                guard case .success(let member) = await roomProxy.getMember(userID: change.userId)
+                else {
                     MXLog.error("Failed retrieving room member for identity status change: \(change)")
                     continue
                 }
@@ -681,14 +709,16 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                       self.createLinkWithText()
                       
                   },
-                  textFields: [AlertInfo<UUID>.AlertTextField(placeholder: L10n.commonText,
-                                                              text: textBinding,
-                                                              autoCapitalization: .never,
-                                                              autoCorrectionDisabled: false),
-                               AlertInfo<UUID>.AlertTextField(placeholder: L10n.richTextEditorUrlPlaceholder,
-                                                              text: urlBinding,
-                                                              autoCapitalization: .never,
-                                                              autoCorrectionDisabled: true)])
+                  textFields: [
+                      AlertInfo<UUID>.AlertTextField(placeholder: L10n.commonText,
+                                                     text: textBinding,
+                                                     autoCapitalization: .never,
+                                                     autoCorrectionDisabled: false),
+                      AlertInfo<UUID>.AlertTextField(placeholder: L10n.richTextEditorUrlPlaceholder,
+                                                     text: urlBinding,
+                                                     autoCapitalization: .never,
+                                                     autoCorrectionDisabled: true)
+                  ])
     }
     
     private func makeSetUrlAlertInfo(urlBinding: Binding<String>, isEdit: Bool) -> AlertInfo<UUID> {
@@ -702,10 +732,12 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                       self.setLink()
                       
                   },
-                  textFields: [AlertInfo<UUID>.AlertTextField(placeholder: L10n.richTextEditorUrlPlaceholder,
-                                                              text: urlBinding,
-                                                              autoCapitalization: .never,
-                                                              autoCorrectionDisabled: true)])
+                  textFields: [
+                      AlertInfo<UUID>.AlertTextField(placeholder: L10n.richTextEditorUrlPlaceholder,
+                                                     text: urlBinding,
+                                                     autoCapitalization: .never,
+                                                     autoCorrectionDisabled: true)
+                  ])
     }
     
     private func makeEditChoiceAlertInfo(urlBinding: Binding<String>) -> AlertInfo<UUID> {
@@ -715,12 +747,14 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                       self.restoreComposerSelectedRange()
                       self.removeLinks()
                   },
-                  verticalButtons: [AlertInfo<UUID>.AlertButton(title: L10n.actionEdit) {
-                      self.state.bindings.alertInfo = nil
-                      DispatchQueue.main.async {
-                          self.state.bindings.alertInfo = self.makeSetUrlAlertInfo(urlBinding: urlBinding, isEdit: true)
+                  verticalButtons: [
+                      AlertInfo<UUID>.AlertButton(title: L10n.actionEdit) {
+                          self.state.bindings.alertInfo = nil
+                          DispatchQueue.main.async {
+                              self.state.bindings.alertInfo = self.makeSetUrlAlertInfo(urlBinding: urlBinding, isEdit: true)
+                          }
                       }
-                  }])
+                  ])
     }
     
     private func restoreComposerSelectedRange() {
@@ -751,7 +785,8 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
             state.bindings.composerFocused = true
         }
         
-        NotificationCenter.default.addObserver(self, selector: #selector(hardwareKeyboardDidConnect), name: .GCKeyboardDidConnect, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(hardwareKeyboardDidConnect), name: .GCKeyboardDidConnect,
+                                               object: nil)
         #endif
     }
     
@@ -796,24 +831,36 @@ private final class ComposerMentionReplacer: MentionReplacer {
 // MARK: - Mocks
 
 extension ComposerToolbarViewModel {
-    enum MockMode { case editing, recordVoiceMessage, previewVoiceMessage(isUploading: Bool), reply(isLoading: Bool) }
+    enum MockMode {
+        case editing, recordVoiceMessage
+        case previewVoiceMessage(isUploading: Bool)
+        case reply(isLoading: Bool)
+    }
     
     static func mock(focused: Bool = false,
                      message: String = "",
                      mockMode: MockMode? = nil,
                      hasSuggestions: Bool = false,
                      canSend: Bool = true) -> ComposerToolbarViewModel {
-        let suggestions: [SuggestionItem] = if hasSuggestions {
-            [.init(suggestionType: .user(.init(id: "@user_mention_1:matrix.org", displayName: "User 1", avatarURL: nil)), range: .init(), rawSuggestionText: ""),
-             .init(suggestionType: .user(.init(id: "@user_mention_2:matrix.org", displayName: "User 2", avatarURL: .mockMXCUserAvatar)), range: .init(), rawSuggestionText: "")]
-        } else {
-            []
-        }
+        let suggestions: [SuggestionItem] =
+            if hasSuggestions {
+                [
+                    .init(suggestionType: .user(.init(id: "@user_mention_1:matrix.org", displayName: "User 1",
+                                                      avatarURL: nil)), range: .init(), rawSuggestionText: ""),
+                    .init(suggestionType: .user(.init(id: "@user_mention_2:matrix.org", displayName: "User 2",
+                                                      avatarURL: .mockMXCUserAvatar)), range: .init(),
+                          rawSuggestionText: "")
+                ]
+            } else {
+                []
+            }
         
         let roomProxy = JoinedRoomProxyMock(.init())
         
         if !canSend {
-            roomProxy.identityStatusChangesPublisher = .init([.init(userId: RoomMemberProxyMock.mockAlice.userID, changedTo: .verificationViolation)])
+            roomProxy.identityStatusChangesPublisher = .init([
+                .init(userId: RoomMemberProxyMock.mockAlice.userID, changedTo: .verificationViolation)
+            ])
         }
         
         let wysiwygViewModel = WysiwygComposerViewModel()
@@ -840,13 +887,14 @@ extension ComposerToolbarViewModel {
                                                                 waveform: .data(Array(repeating: 1.0, count: 1000)),
                                                                 isUploading: isUploading)
         case .reply(let isLoading):
-            let replyDetails: TimelineItemReplyDetails = if isLoading {
-                .loading(eventID: "")
-            } else {
-                .loaded(sender: .init(id: "", displayName: "Test"),
-                        eventID: "",
-                        eventContent: .message(.text(.init(body: "Hello World!"))))
-            }
+            let replyDetails: TimelineItemReplyDetails =
+                if isLoading {
+                    .loading(eventID: "")
+                } else {
+                    .loaded(sender: .init(id: "", displayName: "Test"),
+                            eventID: "",
+                            eventContent: .message(.text(.init(body: "Hello World!"))))
+                }
             viewModel.state.composerMode = .reply(eventID: UUID().uuidString, replyDetails: replyDetails, isThread: false)
         case nil:
             break

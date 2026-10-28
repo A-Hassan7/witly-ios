@@ -11,11 +11,13 @@ import SwiftUI
 
 typealias ThreadTimelineScreenViewModelType = StateStoreViewModel<ThreadTimelineScreenViewState, ThreadTimelineScreenViewAction>
 
-class ThreadTimelineScreenViewModel: ThreadTimelineScreenViewModelType, ThreadTimelineScreenViewModelProtocol {
+class ThreadTimelineScreenViewModel: ThreadTimelineScreenViewModelType,
+    ThreadTimelineScreenViewModelProtocol {
     private let roomProxy: JoinedRoomProxyProtocol
     private let userSession: UserSessionProtocol
     
-    private let actionsSubject: PassthroughSubject<ThreadTimelineScreenViewModelAction, Never> = .init()
+    private let actionsSubject: PassthroughSubject<ThreadTimelineScreenViewModelAction, Never> =
+        .init()
     var actionsPublisher: AnyPublisher<ThreadTimelineScreenViewModelAction, Never> {
         actionsSubject.eraseToAnyPublisher()
     }
@@ -26,7 +28,8 @@ class ThreadTimelineScreenViewModel: ThreadTimelineScreenViewModelType, ThreadTi
         self.userSession = userSession
         
         super.init(initialViewState: ThreadTimelineScreenViewState(roomTitle: roomProxy.infoPublisher.value.displayName ?? roomProxy.id,
-                                                                   roomAvatar: roomProxy.infoPublisher.value.avatar), mediaProvider: userSession.mediaProvider)
+                                                                   roomAvatar: roomProxy.infoPublisher.value.avatar),
+                   mediaProvider: userSession.mediaProvider)
         
         roomProxy.infoPublisher
             .receive(on: DispatchQueue.main)
@@ -85,19 +88,26 @@ class ThreadTimelineScreenViewModel: ThreadTimelineScreenViewModelType, ThreadTi
     
     private func updateVerificationBadge() async {
         guard roomProxy.infoPublisher.value.isDM,
-              let dmRecipient = roomProxy.membersPublisher.value.first(where: { $0.userID != roomProxy.ownUserID }),
-              case let .success(userIdentity) = await userSession.clientProxy.userIdentity(for: dmRecipient.userID, fallBackToServer: true) else {
+              let dmRecipient = roomProxy.membersPublisher.value.first(where: {
+                  $0.userID != roomProxy.ownUserID
+              }),
+              case .success(let userIdentity) = await userSession.clientProxy.userIdentity(for: dmRecipient.userID, fallBackToServer: true)
+        else {
             state.dmRecipientDetails.verification = .notVerified
             return
         }
         
         guard let userIdentity else {
-            MXLog.failure("User identity should be known at this point")
+            // WITLY SEAM: was MXLog.failure (asserts/traps in DEBUG) — see RoomScreenViewModel's
+            // identical fix. Bridge puppet users (e.g. WhatsApp ghosts) legitimately have no
+            // cross-signing identity, an expected, recoverable case (falls back to "not verified"
+            // either way), not a programming error worth crashing over.
+            MXLog.error("User identity not available for DM recipient; treating as not verified")
             state.dmRecipientDetails.verification = .notVerified
             return
         }
         
-        state.dmRecipientDetails.verification = userIdentity.verificationState
+        state.dmRecipientDetails.verification = .witlyEffective(for: dmRecipient.userID, identity: userIdentity)
     }
     
     private func updateRoomInfo(_ roomInfo: RoomInfoProxyProtocol) {

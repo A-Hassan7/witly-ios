@@ -17,7 +17,8 @@ class UserProfileScreenViewModel: UserProfileScreenViewModelType, UserProfileScr
     private let analytics: AnalyticsServiceProtocol
     private let userIndicatorController: UserIndicatorControllerProtocol
     
-    private var actionsSubject: PassthroughSubject<UserProfileScreenViewModelAction, Never> = .init()
+    private var actionsSubject: PassthroughSubject<UserProfileScreenViewModelAction, Never> =
+        .init()
     var actionsPublisher: AnyPublisher<UserProfileScreenViewModelAction, Never> {
         actionsSubject.eraseToAnyPublisher()
     }
@@ -104,9 +105,11 @@ class UserProfileScreenViewModel: UserProfileScreenViewModelType, UserProfileScr
             MXLog.error("Failed to find user profile: \(error)")
         }
         
-        if case let .success(.some(identity)) = await identityResult {
+        if case .success(.some(let identity)) = await identityResult {
             state.isIdentityKnown = true
-            state.isVerified = identity.verificationState == .verified
+            state.isVerified =
+                UserIdentityVerificationState.witlyEffective(for: state.userID, identity: identity)
+                    == .verified
         } else {
             state.isIdentityKnown = false
             MXLog.error("Failed to find the user's identity.")
@@ -134,11 +137,12 @@ class UserProfileScreenViewModel: UserProfileScreenViewModelType, UserProfileScr
                 actionsSubject.send(.openDirectChat(roomID: roomID))
             } else {
                 Task {
-                    let isUnknown = if case let .success(identity) = await userSession.clientProxy.userIdentity(for: userProfile.id, fallBackToServer: false) {
-                        identity == nil
-                    } else {
-                        true
-                    }
+                    let isUnknown =
+                        if case .success(let identity) = await userSession.clientProxy.userIdentity(for: userProfile.id, fallBackToServer: false) {
+                            identity == nil
+                        } else {
+                            true
+                        }
                     state.bindings.inviteConfirmationUser = .init(user: userProfile, isUnknown: isUnknown)
                 }
             }
@@ -163,7 +167,8 @@ class UserProfileScreenViewModel: UserProfileScreenViewModelType, UserProfileScr
     }
     
     private func startCall(roomID: String, isVoiceCall: Bool) async {
-        guard case let .joined(roomProxy) = await userSession.clientProxy.roomForIdentifier(roomID) else {
+        guard case .joined(let roomProxy) = await userSession.clientProxy.roomForIdentifier(roomID)
+        else {
             showErrorIndicator()
             return
         }
@@ -182,7 +187,8 @@ class UserProfileScreenViewModel: UserProfileScreenViewModelType, UserProfileScr
     
     private func showLoadingIndicator(allowsInteraction: Bool) {
         userIndicatorController.submitIndicator(UserIndicator(id: loadingIndicatorIdentifier,
-                                                              type: .modal(progress: .indeterminate, interactiveDismissDisabled: false, allowsInteraction: allowsInteraction),
+                                                              type: .modal(progress: .indeterminate, interactiveDismissDisabled: false,
+                                                                           allowsInteraction: allowsInteraction),
                                                               title: L10n.commonLoading,
                                                               persistent: true),
                                                 delay: .milliseconds(100))

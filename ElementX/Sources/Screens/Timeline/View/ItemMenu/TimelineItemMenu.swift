@@ -92,7 +92,7 @@ struct TimelineItemMenu: View {
             }
             .accessibilityElement(children: .combine)
             
-            if case let .sendingFailed(.verifiedUser(failure)) = item.properties.deliveryStatus {
+            if case .sendingFailed(.verifiedUser(let failure)) = item.properties.deliveryStatus {
                 Divider()
                     .padding(.horizontal, -16)
                 
@@ -102,8 +102,9 @@ struct TimelineItemMenu: View {
                     send(.itemSendInfoTapped(itemID: item.id))
                 }
                 .padding(.bottom, 8)
-            } else if let authenticity = item.properties.encryptionAuthenticity {
-                Label(authenticity.message, icon: authenticity.icon, iconSize: .small, relativeTo: .compound.bodySMSemibold)
+            } else if let authenticity = item.witlyVisibleEncryptionAuthenticity {
+                Label(authenticity.message, icon: authenticity.icon, iconSize: .small,
+                      relativeTo: .compound.bodySMSemibold)
                     .font(.compound.bodySMSemibold)
                     .foregroundStyle(authenticity.foregroundStyle)
             }
@@ -126,11 +127,13 @@ struct TimelineItemMenu: View {
             .readFrame($reactionsFrame)
             .overlay {
                 if horizontalSizeClass == .compact {
-                    LinearGradient(stops: [.init(color: .clear, location: 0.0),
-                                           .init(color: .clear, location: 0.9),
-                                           .init(color: .compound.bgCanvasDefault, location: 1.0)],
-                                   startPoint: .leading,
-                                   endPoint: .trailing)
+                    LinearGradient(stops: [
+                        .init(color: .clear, location: 0.0),
+                        .init(color: .clear, location: 0.9),
+                        .init(color: .compound.bgCanvasDefault, location: 1.0)
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing)
                         .allowsHitTesting(false)
                 }
             }
@@ -224,7 +227,9 @@ private struct VerifiedUserSendFailureView: View {
     var title: String {
         switch failure {
         case .hasUnsignedDevice:
-            isYou ? L10n.screenTimelineItemMenuSendFailureYouUnsignedDevice : L10n.screenTimelineItemMenuSendFailureUnsignedDevice(memberDisplayName)
+            isYou
+                ? L10n.screenTimelineItemMenuSendFailureYouUnsignedDevice
+                : L10n.screenTimelineItemMenuSendFailureUnsignedDevice(memberDisplayName)
         case .changedIdentity:
             L10n.screenTimelineItemMenuSendFailureChangedIdentity(memberDisplayName)
         }
@@ -233,7 +238,8 @@ private struct VerifiedUserSendFailureView: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                Label(title, icon: \.errorSolid, iconSize: .small, relativeTo: .compound.bodySMSemibold)
+                Label(title, icon: \.errorSolid, iconSize: .small,
+                      relativeTo: .compound.bodySMSemibold)
                     .font(.compound.bodySMSemibold)
                     .foregroundStyle(.compound.textCriticalPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)

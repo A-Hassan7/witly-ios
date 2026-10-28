@@ -31,7 +31,10 @@ struct RoomMemberDetailsScreenViewState: BindableState {
     }
     
     var showVerifyIdentitySection: Bool {
+        // Bridge ghosts (e.g. WhatsApp contacts) never have a genuine cross-signing identity to
+        // verify — offering to "verify" one would be a meaningless Matrix implementation detail.
         verificationState == .notVerified && !isOwnMemberDetails
+            && !WitlyBridgeIdentity.isBridgeGhost(userID: userID)
     }
     
     var showWithdrawVerificationSection: Bool {

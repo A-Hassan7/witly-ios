@@ -37,7 +37,8 @@ class RoomDetailsScreenViewModel: RoomDetailsScreenViewModelType, RoomDetailsScr
         }
     }
     
-    private var actionsSubject: PassthroughSubject<RoomDetailsScreenViewModelAction, Never> = .init()
+    private var actionsSubject: PassthroughSubject<RoomDetailsScreenViewModelAction, Never> =
+        .init()
     
     var actions: AnyPublisher<RoomDetailsScreenViewModelAction, Never> {
         actionsSubject.eraseToAnyPublisher()
@@ -83,7 +84,7 @@ class RoomDetailsScreenViewModel: RoomDetailsScreenViewModelType, RoomDetailsScr
             .store(in: &cancellables)
         
         Task {
-            if case let .success(permalinkURL) = await roomProxy.matrixToPermalink() {
+            if case .success(let permalinkURL) = await roomProxy.matrixToPermalink() {
                 state.permalink = permalinkURL
             }
         }
@@ -182,7 +183,8 @@ class RoomDetailsScreenViewModel: RoomDetailsScreenViewModelType, RoomDetailsScr
         
         if !roomProxy.infoPublisher.value.isDM, state.accountOwner?.role.isOwner == true {
             var isLastOwner = true
-            for member in roomProxy.membersPublisher.value where member.userID != roomProxy.ownUserID && member.membership == .join {
+            for member in roomProxy.membersPublisher.value
+                where member.userID != roomProxy.ownUserID && member.membership == .join {
                 if member.role.isOwner {
                     isLastOwner = false
                     break
@@ -248,7 +250,7 @@ class RoomDetailsScreenViewModel: RoomDetailsScreenViewModelType, RoomDetailsScr
         
         roomProxy.knockRequestsStatePublisher
             .map { requestsState in
-                guard case let .loaded(requests) = requestsState else {
+                guard case .loaded(let requests) = requestsState else {
                     return 0
                 }
                 return requests.count
@@ -333,15 +335,15 @@ class RoomDetailsScreenViewModel: RoomDetailsScreenViewModelType, RoomDetailsScr
         
         if roomProxy.infoPublisher.value.isDM {
             if var dmRecipientInfo = state.dmRecipientInfo {
-                if case let .success(userIdentity) = await userSession.clientProxy.userIdentity(for: dmRecipientInfo.member.id, fallBackToServer: true) {
-                    dmRecipientInfo.verificationState = userIdentity?.verificationState
+                if case .success(let userIdentity) = await userSession.clientProxy.userIdentity(for: dmRecipientInfo.member.id, fallBackToServer: true) {
+                    dmRecipientInfo.verificationState = .witlyEffective(for: dmRecipientInfo.member.id, identity: userIdentity)
                     state.dmRecipientInfo = dmRecipientInfo
                 }
             }
         } else {
             for member in roomProxy.membersPublisher.value {
-                if case let .success(userIdentity) = await userSession.clientProxy.userIdentity(for: member.userID, fallBackToServer: false) {
-                    if userIdentity?.verificationState == .verificationViolation {
+                if case .success(let userIdentity) = await userSession.clientProxy.userIdentity(for: member.userID, fallBackToServer: false) {
+                    if UserIdentityVerificationState.witlyEffective(for: member.userID, identity: userIdentity) == .verificationViolation {
                         state.hasMemberIdentityVerificationStateViolations = true
                         return
                     }
@@ -413,7 +415,7 @@ class RoomDetailsScreenViewModel: RoomDetailsScreenViewModelType, RoomDetailsScr
     }
     
     private func toggleFavourite(_ isFavourite: Bool) async {
-        if case let .failure(error) = await roomProxy.flagAsFavourite(isFavourite) {
+        if case .failure(let error) = await roomProxy.flagAsFavourite(isFavourite) {
             MXLog.error("Failed flagging room as favourite with error: \(error)")
             state.bindings.isFavourite = !isFavourite
         } else {
@@ -424,7 +426,8 @@ class RoomDetailsScreenViewModel: RoomDetailsScreenViewModelType, RoomDetailsScr
     private static let leaveRoomLoadingID = "LeaveRoomLoading"
     
     private func leaveRoom() async {
-        userIndicatorController.submitIndicator(UserIndicator(id: Self.leaveRoomLoadingID, type: .modal, title: L10n.commonLeavingRoom, persistent: true))
+        userIndicatorController.submitIndicator(UserIndicator(id: Self.leaveRoomLoadingID, type: .modal, title: L10n.commonLeavingRoom,
+                                                              persistent: true))
         let result = await roomProxy.leaveRoom()
         userIndicatorController.retractIndicatorWithId(Self.leaveRoomLoadingID)
         switch result {
@@ -479,14 +482,16 @@ class RoomDetailsScreenViewModel: RoomDetailsScreenViewModelType, RoomDetailsScr
     
     private func displayFullScreenAvatar(_ url: URL) {
         let loadingIndicatorIdentifier = "roomAvatarLoadingIndicator"
-        userIndicatorController.submitIndicator(UserIndicator(id: loadingIndicatorIdentifier, type: .modal, title: L10n.commonLoading, persistent: true))
+        userIndicatorController.submitIndicator(UserIndicator(id: loadingIndicatorIdentifier, type: .modal, title: L10n.commonLoading,
+                                                              persistent: true))
         
         Task {
             defer {
                 userIndicatorController.retractIndicatorWithId(loadingIndicatorIdentifier)
             }
             
-            state.bindings.mediaPreviewItem = await MediaPreviewItem.load(from: url, title: roomProxy.infoPublisher.value.displayName, using: userSession.mediaProvider)
+            state.bindings.mediaPreviewItem = await MediaPreviewItem.load(from: url, title: roomProxy.infoPublisher.value.displayName,
+                                                                          using: userSession.mediaProvider)
         }
     }
     
@@ -496,7 +501,8 @@ class RoomDetailsScreenViewModel: RoomDetailsScreenViewModelType, RoomDetailsScr
         }
         
         Task {
-            guard case let .success(pinnedEventsTimeline) = await roomProxy.pinnedEventsTimeline() else {
+            guard case .success(let pinnedEventsTimeline) = await roomProxy.pinnedEventsTimeline()
+            else {
                 return
             }
             

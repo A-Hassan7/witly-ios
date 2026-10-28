@@ -242,6 +242,15 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
     
     private func processIdentityStatusChanges(_ changes: [IdentityStatusChange]) async {
         for change in changes {
+            // Bridge ghosts never have a genuine cross-signing identity, so a reported pin/
+            // verification violation for one isn't a real security concern — skip before even
+            // fetching the member, so this never logs as a failure below.
+            guard !WitlyBridgeIdentity.isBridgeGhost(userID: change.userId) else {
+                identityVerificationViolations[change.userId] = nil
+                identityPinningViolations[change.userId] = nil
+                continue
+            }
+            
             switch change.changedTo {
             case .pinViolation:
                 guard case .success(let member) = await roomProxy.getMember(userID: change.userId)
@@ -297,7 +306,7 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
             return
         }
         
-        state.dmRecipientDetails.verification = userIdentity.verificationState
+        state.dmRecipientDetails.verification = .witlyEffective(for: dmRecipient.userID, identity: userIdentity)
     }
     
     private func resolveIdentityPinningViolation(_ userID: String) async {

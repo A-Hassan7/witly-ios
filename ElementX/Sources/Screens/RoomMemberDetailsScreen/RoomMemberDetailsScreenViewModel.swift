@@ -11,13 +11,15 @@ import SwiftUI
 
 typealias RoomMemberDetailsScreenViewModelType = StateStoreViewModel<RoomMemberDetailsScreenViewState, RoomMemberDetailsScreenViewAction>
 
-class RoomMemberDetailsScreenViewModel: RoomMemberDetailsScreenViewModelType, RoomMemberDetailsScreenViewModelProtocol {
+class RoomMemberDetailsScreenViewModel: RoomMemberDetailsScreenViewModelType,
+    RoomMemberDetailsScreenViewModelProtocol {
     private let roomProxy: JoinedRoomProxyProtocol
     private let userSession: UserSessionProtocol
     private let analytics: AnalyticsServiceProtocol
     private let userIndicatorController: UserIndicatorControllerProtocol
     
-    private var actionsSubject: PassthroughSubject<RoomMemberDetailsScreenViewModelAction, Never> = .init()
+    private var actionsSubject: PassthroughSubject<RoomMemberDetailsScreenViewModelAction, Never> =
+        .init()
     
     private var roomMemberProxy: RoomMemberProxyProtocol?
     
@@ -114,8 +116,8 @@ class RoomMemberDetailsScreenViewModel: RoomMemberDetailsScreenViewModelType, Ro
             actionsSubject.send(.openUserProfile)
         }
         
-        if case let .success(.some(identity)) = await userSession.clientProxy.userIdentity(for: state.userID, fallBackToServer: true) {
-            state.verificationState = identity.verificationState
+        if case .success(.some(let identity)) = await userSession.clientProxy.userIdentity(for: state.userID, fallBackToServer: true) {
+            state.verificationState = .witlyEffective(for: state.userID, identity: identity)
         } else {
             MXLog.error("Failed to find the member's identity.")
         }
@@ -173,7 +175,8 @@ class RoomMemberDetailsScreenViewModel: RoomMemberDetailsScreenViewModelType, Ro
         }
         
         let loadingIndicatorIdentifier = "roomMemberAvatarLoadingIndicator"
-        userIndicatorController.submitIndicator(UserIndicator(id: loadingIndicatorIdentifier, type: .modal, title: L10n.commonLoading, persistent: true))
+        userIndicatorController.submitIndicator(UserIndicator(id: loadingIndicatorIdentifier, type: .modal, title: L10n.commonLoading,
+                                                              persistent: true))
         defer { userIndicatorController.retractIndicatorWithId(loadingIndicatorIdentifier) }
         
         state.bindings.mediaPreviewItem = await MediaPreviewItem.load(from: url, title: roomMemberProxy.displayName, using: userSession.mediaProvider)
@@ -184,7 +187,8 @@ class RoomMemberDetailsScreenViewModel: RoomMemberDetailsScreenViewModelType, Ro
         
         let loadingIndicatorIdentifier = "openDirectChatLoadingIndicator"
         userIndicatorController.submitIndicator(UserIndicator(id: loadingIndicatorIdentifier,
-                                                              type: .modal(progress: .indeterminate, interactiveDismissDisabled: true, allowsInteraction: false),
+                                                              type: .modal(progress: .indeterminate, interactiveDismissDisabled: true,
+                                                                           allowsInteraction: false),
                                                               title: L10n.commonLoading,
                                                               persistent: true),
                                                 delay: .milliseconds(200))
@@ -197,16 +201,19 @@ class RoomMemberDetailsScreenViewModel: RoomMemberDetailsScreenViewModelType, Ro
             } else if roomProxy.details.historySharingState != RoomHistorySharingState.hidden {
                 Task {
                     let identity = await self.userSession.clientProxy.userIdentity(for: roomMemberProxy.userID, fallBackToServer: false)
-                    let user: UserProfile = .init(userID: roomMemberProxy.userID, displayName: roomMemberProxy.displayName, avatarURL: roomMemberProxy.avatarURL)
-                    let isUnknown = if case .success(let identity) = identity {
-                        identity == nil
-                    } else {
-                        true
-                    }
+                    let user: UserProfile = .init(userID: roomMemberProxy.userID, displayName: roomMemberProxy.displayName,
+                                                  avatarURL: roomMemberProxy.avatarURL)
+                    let isUnknown =
+                        if case .success(let identity) = identity {
+                            identity == nil
+                        } else {
+                            true
+                        }
                     self.state.bindings.inviteConfirmationUser = .init(user: user, isUnknown: isUnknown)
                 }
             } else {
-                state.bindings.inviteConfirmationUser = .init(user: .init(userID: roomMemberProxy.userID, displayName: roomMemberProxy.displayName, avatarURL: roomMemberProxy.avatarURL), isUnknown: false)
+                state.bindings.inviteConfirmationUser = .init(user: .init(userID: roomMemberProxy.userID, displayName: roomMemberProxy.displayName,
+                                                                          avatarURL: roomMemberProxy.avatarURL), isUnknown: false)
             }
         case .failure:
             state.bindings.alertInfo = .init(id: .failedOpeningDirectChat)
@@ -218,7 +225,8 @@ class RoomMemberDetailsScreenViewModel: RoomMemberDetailsScreenViewModelType, Ro
         
         let loadingIndicatorIdentifier = "createDirectChatLoadingIndicator"
         userIndicatorController.submitIndicator(UserIndicator(id: loadingIndicatorIdentifier,
-                                                              type: .modal(progress: .indeterminate, interactiveDismissDisabled: true, allowsInteraction: false),
+                                                              type: .modal(progress: .indeterminate, interactiveDismissDisabled: true,
+                                                                           allowsInteraction: false),
                                                               title: L10n.commonLoading,
                                                               persistent: true),
                                                 delay: .milliseconds(200))
@@ -234,7 +242,8 @@ class RoomMemberDetailsScreenViewModel: RoomMemberDetailsScreenViewModelType, Ro
     }
     
     private func startCall(roomID: String, isVoiceCall: Bool) async {
-        guard case let .joined(roomProxy) = await userSession.clientProxy.roomForIdentifier(roomID) else {
+        guard case .joined(let roomProxy) = await userSession.clientProxy.roomForIdentifier(roomID)
+        else {
             showErrorIndicator()
             return
         }
@@ -253,7 +262,8 @@ class RoomMemberDetailsScreenViewModel: RoomMemberDetailsScreenViewModelType, Ro
     
     private func showMemberLoadingIndicator() {
         userIndicatorController.submitIndicator(UserIndicator(id: loadingIndicatorIdentifier,
-                                                              type: .modal(progress: .indeterminate, interactiveDismissDisabled: false, allowsInteraction: true),
+                                                              type: .modal(progress: .indeterminate, interactiveDismissDisabled: false,
+                                                                           allowsInteraction: true),
                                                               title: L10n.commonLoading,
                                                               persistent: true),
                                                 delay: .milliseconds(100))
