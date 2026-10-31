@@ -101,6 +101,16 @@ nonisolated enum WitlyCountries {
         }
         return (WitlyCountries.default, value)
     }
+    
+    /// Strips a leading national trunk prefix (e.g. the UK's "0" in "07911123456") from a typed
+    /// national number before it's combined with the dial code. Required, not just cosmetic:
+    /// whatsmeow (the library mautrix-whatsapp's phone-pairing flow is built on) explicitly rejects
+    /// any number starting with "0" after the country code (ErrPhoneNumberIsNotInternational) — see
+    /// github.com/tulir/whatsmeow/blob/main/pair-code.go. Stripping it here means a user typing
+    /// either "7911123456" or "07911123456" always produces the same, correct E.164 value.
+    static func stripNationalTrunkPrefix(_ national: String) -> String {
+        national.hasPrefix("0") ? String(national.drop { $0 == "0" }) : national
+    }
 }
 
 /// A country-code selector + national-number field, producing an E.164 value (e.g.
@@ -134,17 +144,20 @@ struct WitlyPhoneNumberField: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Country code")
             
-            TextField("Phone number", text: Binding(get: { parsed.national },
-                                                    set: { newValue in
-                                                        value = "+\(parsed.country.dialCode)\(newValue.filter(\.isNumber))"
-                                                    }))
-                                                    .keyboardType(.numberPad)
-                                                    .textFieldStyle(.compound(labelText: nil, footerText: nil, state: .default,
-                                                                              accessibilityIdentifier: "witlyWhatsAppPhoneNumberField"))
+            TextField("Phone number",
+                      text: Binding(get: { parsed.national },
+                                    set: { newValue in
+                                        let digits = WitlyCountries.stripNationalTrunkPrefix(newValue.filter(\.isNumber))
+                                        value = "+\(parsed.country.dialCode)\(digits)"
+                                    }))
+                                    .keyboardType(.numberPad)
+                                    .textFieldStyle(.compound(labelText: nil, footerText: nil, state: .default,
+                                                              accessibilityIdentifier: "witlyWhatsAppPhoneNumberField"))
         }
         .sheet(isPresented: $isPickerPresented) {
             WitlyCountryPickerSheet(selection: parsed.country) { country in
-                value = "+\(country.dialCode)\(parsed.national)"
+                value =
+                    "+\(country.dialCode)\(WitlyCountries.stripNationalTrunkPrefix(parsed.national))"
             }
         }
     }
