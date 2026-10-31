@@ -102,7 +102,8 @@ struct TimelineItemMenu: View {
                     send(.itemSendInfoTapped(itemID: item.id))
                 }
                 .padding(.bottom, 8)
-            } else if let authenticity = item.witlyVisibleEncryptionAuthenticity {
+            } else if let authenticity = item.witlyVisibleEncryptionAuthenticity(ownUserID: context.viewState.ownUserID,
+                                                                                 isBridgedRoom: WitlyBridgeIdentity.isBridgedRoom(memberIDs: context.viewState.members.keys)) {
                 Label(authenticity.message, icon: authenticity.icon, iconSize: .small,
                       relativeTo: .compound.bodySMSemibold)
                     .font(.compound.bodySMSemibold)

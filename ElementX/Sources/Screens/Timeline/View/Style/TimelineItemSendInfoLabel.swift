@@ -17,7 +17,9 @@ extension View {
                               context: TimelineViewModel.Context) -> some View {
         modifier(TimelineItemSendInfoModifier(sendInfo: .init(timelineItem: timelineItem,
                                                               adjustedDeliveryStatus: adjustedDeliveryStatus,
-                                                              hasContentScanningFailure: hasContentScanningFailure),
+                                                              hasContentScanningFailure: hasContentScanningFailure,
+                                                              ownUserID: context.viewState.ownUserID,
+                                                              isBridgedRoom: WitlyBridgeIdentity.isBridgedRoom(memberIDs: context.viewState.members.keys)),
                                               // A gallery announces this when entering it instead.
                                               isAccessibilityHidden: timelineItem is GalleryRoomTimelineItem,
                                               context: context))
@@ -158,14 +160,16 @@ private struct TimelineItemSendInfo {
 private extension TimelineItemSendInfo {
     init(timelineItem: EventBasedTimelineItemProtocol,
          adjustedDeliveryStatus: TimelineItemDeliveryStatus?,
-         hasContentScanningFailure: Bool = false) {
+         hasContentScanningFailure: Bool = false,
+         ownUserID: String,
+         isBridgedRoom: Bool) {
         itemID = timelineItem.id
         localizedString = timelineItem.localizedSendInfo
         
         status =
             if case .sendingFailed = adjustedDeliveryStatus {
                 .sendingFailed
-            } else if let authenticity = timelineItem.witlyVisibleEncryptionAuthenticity {
+            } else if let authenticity = timelineItem.witlyVisibleEncryptionAuthenticity(ownUserID: ownUserID, isBridgedRoom: isBridgedRoom) {
                 .encryptionAuthenticity(authenticity)
             } else if let forwarder = timelineItem.properties.encryptionForwarder {
                 .encryptionForwarder(forwarder)

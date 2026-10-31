@@ -796,8 +796,11 @@ class TimelineViewModel: TimelineViewModelType, TimelineViewModelProtocol {
             
         } else if let forwarderMessage = eventTimelineItem.properties.encryptionForwarder?.message {
             displayAlert(.encryptionForwarder(forwarderMessage))
-        } else if let authenticityMessage = eventTimelineItem.witlyVisibleEncryptionAuthenticity?
-            .message {
+        } else if let authenticityMessage =
+            eventTimelineItem
+                .witlyVisibleEncryptionAuthenticity(ownUserID: state.ownUserID,
+                                                    isBridgedRoom: WitlyBridgeIdentity.isBridgedRoom(memberIDs: state.members.keys))?
+                .message {
             displayAlert(.encryptionAuthenticity(authenticityMessage))
         }
     }
